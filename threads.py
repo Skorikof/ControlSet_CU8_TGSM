@@ -25,24 +25,26 @@ class Reader(QRunnable):
                     time.sleep(0.01)
                 else:
                     print('Run Read Thread')
+                    block_nastr = self.read_int(8194, 14)
+                    self.signal.read_result.emit('block_nastr', block_nastr)
+                    print('Block nastr is reading')
+                    time.sleep(0.02)
                     block_1 = self.read_int(0, 5)
+                    time.sleep(0.02)
+                    block_dw = self.read_int(4096, 20)
+                    time.sleep(0.02)
+                    block_dwl_1 = self.read_int(4116, 40)
+                    time.sleep(0.02)
+                    block_dwl_2 = self.read_int(4156, 40)
+                    time.sleep(0.02)
+                    block_end = self.read_int(4208, 9)
+
                     self.signal.read_result.emit('block_1', block_1)
-                    print('Block begin is reading')
-
-                    if self.flag_read:
-                        block_nastr = self.read_int(8194, 14)
-                        self.signal.read_result.emit('block_nastr', block_nastr)
-
-                        block_dw = self.read_int(4096, 20)
-                        block_dwl_1 = self.read_int(4116, 40)
-                        block_dwl_2 = self.read_int(4156, 40)
-                        block_end = self.read_int(4208, 9)
-
-                        self.signal.read_result.emit('block_dw', block_dw)
-                        self.signal.read_result.emit('block_dwl_1', block_dwl_1)
-                        self.signal.read_result.emit('block_dwl_2', block_dwl_2)
-                        self.signal.read_result.emit('block_end', block_end)
-                    time.sleep(10)
+                    self.signal.read_result.emit('block_dw', block_dw)
+                    self.signal.read_result.emit('block_dwl_1', block_dwl_1)
+                    self.signal.read_result.emit('block_dwl_2', block_dwl_2)
+                    self.signal.read_result.emit('block_end', block_end)
+                    time.sleep(1)
 
             except Exception as e:
                 self.signal.read_error.emit(str(e))
@@ -51,9 +53,9 @@ class Reader(QRunnable):
 
     def read_int(self, adr_reg, num_reg):
         try:
+            print('Read {} register'.format(hex(adr_reg)))
             rr = self.client.read_holding_registers(adr_reg, num_reg, unit=1)
             if not rr.isError():
-                self.flag_read = True
                 txt = 'Register {} read comlite!'.format(hex(adr_reg))
                 self.signal.read_error.emit(txt)
                 temp_list = []
@@ -62,7 +64,7 @@ class Reader(QRunnable):
                 return temp_list
 
             else:
-                txt = 'Error read {} register..Repeat'.format(hex(adr_reg))
+                txt = 'ERROR read {} register'.format(hex(adr_reg))
                 self.signal.read_error.emit(txt)
                 self.read_int(adr_reg, num_reg)
 
@@ -82,7 +84,6 @@ class Reader(QRunnable):
             self.signal.read_error.emit(str(e))
 
     def startRead(self, client):
-        self.flag_read = False
         self.client = client
         self.is_run = True
 

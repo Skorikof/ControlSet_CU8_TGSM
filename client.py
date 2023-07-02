@@ -28,8 +28,8 @@ class Client:
 
     def connectClient(self, port):
         try:
-            self.client = ModBusClient(method='ascii', port='COM4', parity='N', baudrate=9600,
-                                       databits=8, stopbits=1, strict=False, retries=5, timeout=1000)
+            self.client = ModBusClient(method='ascii', port=port, parity='N', baudrate=9600,
+                                       databits=8, stopbits=1, strict=False, retries=3, timeout=1000)
 
             self.flag_connect = self.client.connect()
             if self.flag_connect:

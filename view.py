@@ -107,7 +107,7 @@ class AppWindow(QMainWindow):
             self.model.flag_write = False
             self.model.stopRead()
             while not self.model.flag_write:
-                self.model.startWrite(0, [50])
+                self.model.startWrite(0, [5])
 
             self.model.startRead()
 
