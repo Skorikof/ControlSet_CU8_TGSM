@@ -11,7 +11,7 @@ class WinSignals(QObject):
     startRead = pyqtSignal(object)
     stopRead = pyqtSignal()
     exitRead = pyqtSignal()
-    startWrite = pyqtSignal(object, int, list)
+    startWrite = pyqtSignal(object, int, int)
     stopWrite = pyqtSignal()
     exitWrite = pyqtSignal()
     finish_read = pyqtSignal(str)
@@ -217,13 +217,13 @@ class Model:
             print(txt)
 
     def initWriter(self):
-        self.writeVel = Writer()
-        self.writeVel.signal.write_error.connect(self.writeError)
-        self.writeVel.signal.write_finish.connect(self.writeFinish)
-        self.signal.startWrite.connect(self.writeVel.startWrite)
-        self.signal.stopWrite.connect(self.writeVel.stopWrite)
-        self.signal.exitWrite.connect(self.writeVel.exitWrite)
-        self.threadpool.start(self.writeVel)
+        self.writeVal = Writer()
+        self.writeVal.signal.write_error.connect(self.writeError)
+        self.writeVal.signal.write_finish.connect(self.writeFinish)
+        self.signal.startWrite.connect(self.writeVal.startWrite)
+        self.signal.stopWrite.connect(self.writeVal.stopWrite)
+        self.signal.exitWrite.connect(self.writeVal.exitWrite)
+        self.threadpool.start(self.writeVal)
 
     def startWrite(self, start_adr, values):
         self.signal.startWrite.emit(self.client.client, start_adr, values)
@@ -240,3 +240,12 @@ class Model:
     def writeFinish(self):
         print('Write OK')
         self.flag_write = True
+
+    def writeValue(self, start_adr, value):
+        try:
+            self.start_adr = start_adr
+            self.value = value
+
+        except Exception as e:
+            print(str(e))
+            print('ERROR in startValue')

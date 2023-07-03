@@ -37,7 +37,7 @@ class Reader(QRunnable):
                     self.signal.read_result.emit('block_dwl_1', block_dwl_1)
                     self.signal.read_result.emit('block_dwl_2', block_dwl_2)
                     self.signal.read_result.emit('block_end', block_end)
-                    time.sleep(1)
+                    time.sleep(10)
 
             except Exception as e:
                 self.signal.read_error.emit(str(e))
@@ -104,9 +104,11 @@ class Writer(QRunnable):
                     time.sleep(0.01)
                 else:
                     while self.number_attempts <= self.max_attempts:
+                        temp_list = []
+                        temp_list.append(self.values)
                         print('Enter write thread')
-                        print('DATA, start_adr - {}, values - {}'.format(self.start_adr, self.values))
-                        rq = self.client.write_register(self.start_adr, self.values[0], unit=1)
+                        print('DATA, start_adr - {}, values - {}'.format(self.start_adr, temp_list))
+                        rq = self.client.write_registers(self.start_adr, temp_list, unit=1)
                         time.sleep(0.1)
                         if not rq.isError():
                             print('Complite write reg')
@@ -121,6 +123,8 @@ class Writer(QRunnable):
                             self.number_attempts += 1
                             time.sleep(0.2)
                     if not self.flag_write:
+                        txt = 'Ошибка в попытке записи регистра'
+                        self.signal.write_error.emit(txt)
                         self.signal.write_error.emit(str(rq))
 
             except Exception as e:

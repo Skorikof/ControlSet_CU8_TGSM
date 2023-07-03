@@ -1,6 +1,9 @@
 import sys
+import time
+
 from mainui import Ui_MainWindow, WriteWindow
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtCore import Qt
 
 
 class AppWindow(QMainWindow):
@@ -10,6 +13,7 @@ class AppWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.win_write = WriteWindow()
+        self.win_write.setVisible(False)
         self.com_port()
         self.buttons()
         self.initTable()
@@ -48,14 +52,10 @@ class AppWindow(QMainWindow):
             self.ui.read_nastr_BTN.clicked.connect(self.readNastrContr)
             self.ui.read_BTN.clicked.connect(self.readDataContr)
             self.ui.stop_BTN.clicked.connect(self.model.stopRead)
-            # self.win_write.write_value_btn.clicked.connect(self.initWriteVal)
-            # self.win_write.cancel_value_btn.clicked.connect(self.clickedCancel)
+            self.win_write.cancel_value_btn.clicked.connect(self.winWriteCancel)
 
         except Exception as e:
             print(str(e))
-
-    # def clickedCancel(self):
-    #     self.close()
 
     def initTable(self):
         try:
@@ -101,40 +101,39 @@ class AppWindow(QMainWindow):
     def readNastrContr(self):
         self.model.startRead()
 
-    def winWriteShow(self, text_lbl, row):
+    def winWriteShow(self, text_lbl, start_reg):
         try:
             self.model.flag_write = False
-            # self.model.stopRead()
-            while not self.model.flag_write:
-                self.model.startWrite(0, [5])
+            self.start_reg = start_reg
+            self.win_write.setVisible(True)
+            self.win_write.value_LE.clear()
+            self.win_write.label.setText(text_lbl)
+            self.win_write.value_LE.returnPressed.connect(self.initWriteVal)
 
-            self.model.startRead()
+        except Exception as e:
+            print(str(e))
 
-            # self.win_write.value_LE.clear()
-            # self.win_write.show()
-            # self.win_write.label.setText(text_lbl)
-            # self.win_write.write_value_btn.clicked.connect(self.initWriteVal)
+    def winWriteCancel(self):
+        try:
+            self.win_write.close()
 
         except Exception as e:
             print(str(e))
 
     def initWriteVal(self):
         try:
-            pass
-            # # temp = self.win_write.value_LE.text()
-            # if len(temp) > 0:
-            #     # self.model.stopRead()
-            #     temp_v = []
-            #     temp_v.append(int(temp))
-            #     self.model.writeValues(self.start_reg, temp_v)
-            #     self.win_write.value_LE.clear()
-            #     self.win_write.close()
-            #     # self.model.startRead('nastr')
-            #     # self.model.startRead('data')
-            #
-            # else:
-            #     txt = 'НЕКОРРЕКТНОЕ ЗНАЧЕНИЕ'
-            #     self.win_write.value_LE.setText(txt)
+            if not self.model.flag_write:
+                temp = self.win_write.value_LE.text()
+                if len(temp) > 0:
+                    temp_u = int(temp)
+                    print(self.start_reg)
+                    print('Command write, start_reg - {}, value - {}'.format(self.start_reg, temp_u))
+                    self.model.startWrite(self.start_reg, temp_u)
+                    self.win_write.setVisible(False)
+                else:
+                    pass
+            else:
+                pass
 
         except Exception as e:
             print(str(e))
@@ -221,56 +220,57 @@ class AppWindow(QMainWindow):
     def clickedRowColumn(self, r, c):
         try:
             tag = ''
-            if c == 1:
+            start_reg = 0
+            if c == 1 and 0 < r < 15:
                 if r == 1:
                     tag = 'SEL_D_HIMID'
-                    self.start_reg = 8194
+                    start_reg = 8194
                 if r == 2:
                     tag = 'SEL_D_SPEED'
-                    self.start_reg = 8195
+                    start_reg = 8195
                 if r == 3:
                     tag = 'SEL_DW_FORSE'
-                    self.start_reg = 8196
+                    start_reg = 8196
                 if r == 4:
                     tag = 'SEL_DWL_FORSE'
-                    self.start_reg = 8197
+                    start_reg = 8197
                 if r == 5:
                     tag = 'NUM_DW_FORSE'
-                    self.start_reg = 8198
+                    start_reg = 8198
                 if r == 6:
                     tag = 'NUM_DWL_FORSE'
-                    self.start_reg = 8199
+                    start_reg = 8199
                 if r == 7:
                     tag = 'ADR_DW_FORSE'
-                    self.start_reg = 8200
+                    start_reg = 8200
                 if r == 8:
                     tag = 'ADR_DWL_FORSE'
-                    self.start_reg = 8201
+                    start_reg = 8201
                 if r == 9:
                     tag = 'ADR_MS'
-                    self.start_reg = 8202
+                    start_reg = 8202
                 if r == 10:
                     tag = 'PER_DATCH'
-                    self.start_reg = 8203
+                    start_reg = 8203
                 if r == 11:
                     tag = 'PER_OBMEN'
-                    self.start_reg = 8204
+                    start_reg = 8204
                 if r == 12:
                     tag = 'SEL_TYPE_TRANS_A'
-                    self.start_reg = 8205
+                    start_reg = 8205
                 if r == 13:
                     tag = 'SEL_TYPE_TRANS_B'
-                    self.start_reg = 8206
+                    start_reg = 8206
                 if r == 14:
                     tag = 'NUM_MODEM'
-                    self.start_reg = 8207
+                    start_reg = 8207
                 if r == 16:
                     tag = 'NUM_DEV'
-                    self.start_reg = 1
+                    start_reg = 1
                 if r == 17:
                     tag = 'PER_RSTSYST'
-                    self.start_reg = 4
-                self.winWriteShow(tag, r)
+                    start_reg = 4
+                self.winWriteShow(tag, start_reg)
             else:
                 pass
 
