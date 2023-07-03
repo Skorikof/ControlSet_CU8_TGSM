@@ -60,3 +60,41 @@ class Ui_MainWindow(object):
         self.read_BTN.setText(_translate("MainWindow", "Читать"))
         self.stop_BTN.setText(_translate("MainWindow", "Остановить"))
         self.read_nastr_BTN.setText(_translate("MainWindow", "Читать настройки"))
+
+
+class WriteWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(270, 160)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.label = QtWidgets.QLabel(self.centralwidget)
+        self.label.setGeometry(QtCore.QRect(10, 20, 250, 30))
+        self.label.setMinimumSize(QtCore.QSize(0, 30))
+        self.label.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label.setObjectName("label")
+        self.value_LE = QtWidgets.QLineEdit(self.centralwidget)
+        self.value_LE.setGeometry(QtCore.QRect(10, 60, 250, 30))
+        self.value_LE.setMinimumSize(QtCore.QSize(0, 30))
+        self.value_LE.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.value_LE.setText("")
+        self.value_LE.setObjectName("value_LE")
+        self.write_value_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.write_value_btn.setGeometry(QtCore.QRect(10, 110, 75, 30))
+        self.write_value_btn.setMinimumSize(QtCore.QSize(0, 30))
+        self.write_value_btn.setObjectName("write_value_btn")
+        self.cancel_value_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.cancel_value_btn.setGeometry(QtCore.QRect(185, 110, 75, 30))
+        self.cancel_value_btn.setMinimumSize(QtCore.QSize(0, 30))
+        self.cancel_value_btn.setObjectName("cancel_value_btn")
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label.setText(_translate("MainWindow", "TextLabel"))
+        self.write_value_btn.setText(_translate("MainWindow", "Записать"))
+        self.cancel_value_btn.setText(_translate("MainWindow", "Отмена"))

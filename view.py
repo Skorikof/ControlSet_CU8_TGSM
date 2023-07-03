@@ -1,6 +1,5 @@
 import sys
-from mainui import Ui_MainWindow
-from writeui import WriteWindow
+from mainui import Ui_MainWindow, WriteWindow
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 
 
@@ -10,7 +9,7 @@ class AppWindow(QMainWindow):
         self.model = model
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        # self.win_write = WriteWindow()
+        self.win_write = WriteWindow()
         self.com_port()
         self.buttons()
         self.initTable()
@@ -102,10 +101,10 @@ class AppWindow(QMainWindow):
     def readNastrContr(self):
         self.model.startRead()
 
-    def winWriteShow(self, text_lbl):
+    def winWriteShow(self, text_lbl, row):
         try:
             self.model.flag_write = False
-            self.model.stopRead()
+            # self.model.stopRead()
             while not self.model.flag_write:
                 self.model.startWrite(0, [5])
 
@@ -271,7 +270,7 @@ class AppWindow(QMainWindow):
                 if r == 17:
                     tag = 'PER_RSTSYST'
                     self.start_reg = 4
-                self.winWriteShow(tag)
+                self.winWriteShow(tag, r)
             else:
                 pass
 

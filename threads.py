@@ -24,19 +24,12 @@ class Reader(QRunnable):
                 if not self.is_run:
                     time.sleep(0.01)
                 else:
-                    print('Run Read Thread')
                     block_nastr = self.read_int(8194, 14)
                     self.signal.read_result.emit('block_nastr', block_nastr)
-                    print('Block nastr is reading')
-                    time.sleep(0.02)
                     block_1 = self.read_int(0, 5)
-                    time.sleep(0.02)
                     block_dw = self.read_int(4096, 20)
-                    time.sleep(0.02)
                     block_dwl_1 = self.read_int(4116, 40)
-                    time.sleep(0.02)
                     block_dwl_2 = self.read_int(4156, 40)
-                    time.sleep(0.02)
                     block_end = self.read_int(4208, 9)
 
                     self.signal.read_result.emit('block_1', block_1)
@@ -56,8 +49,7 @@ class Reader(QRunnable):
             print('Read {} register'.format(hex(adr_reg)))
             rr = self.client.read_holding_registers(adr_reg, num_reg, unit=1)
             if not rr.isError():
-                txt = 'Register {} read comlite!'.format(hex(adr_reg))
-                self.signal.read_error.emit(txt)
+                print('Register {} read comlite!'.format(hex(adr_reg)))
                 temp_list = []
                 for i in range(len(rr.registers)):
                     temp_list.append(self.dopCodeBinToDec(bin(rr.registers[i])[2:].zfill(16)))
@@ -115,7 +107,7 @@ class Writer(QRunnable):
                         print('Enter write thread')
                         print('DATA, start_adr - {}, values - {}'.format(self.start_adr, self.values))
                         rq = self.client.write_register(self.start_adr, self.values[0], unit=1)
-                        time.sleep(0.5)
+                        time.sleep(0.1)
                         if not rq.isError():
                             print('Complite write reg')
                             self.flag_write = True
