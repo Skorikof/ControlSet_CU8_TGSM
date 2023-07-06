@@ -24,20 +24,45 @@ class Reader(QRunnable):
                 if not self.is_run:
                     time.sleep(0.01)
                 else:
-                    block_nastr = self.read_int(8194, 14)
-                    self.signal.read_result.emit('block_nastr', block_nastr)
-                    block_1 = self.read_int(0, 5)
-                    block_dw = self.read_int(4096, 20)
-                    block_dwl_1 = self.read_int(4116, 40)
-                    block_dwl_2 = self.read_int(4156, 40)
-                    block_end = self.read_int(4208, 9)
+                    if self.tag == 'basic':
+                        basic_list = []
+                        basic_list.append(self.read_int(8194, 11))
+                        basic_list.append(self.read_int(0, 5))
+                        basic_list.append(self.read_int(4096, 20))
+                        basic_list.append(self.read_int(4116, 40))
+                        basic_list.append(self.read_int(4156, 40))
+                        basic_list.append(self.read_int(4208, 9))
 
-                    self.signal.read_result.emit('block_1', block_1)
-                    self.signal.read_result.emit('block_dw', block_dw)
-                    self.signal.read_result.emit('block_dwl_1', block_dwl_1)
-                    self.signal.read_result.emit('block_dwl_2', block_dwl_2)
-                    self.signal.read_result.emit('block_end', block_end)
-                    time.sleep(10)
+                        self.signal.read_result.emit('basic', basic_list)
+
+                    if self.tag == 'connect':
+                        connect_list = []
+                        connect_list.append(self.read_int(8205, 5))
+                        connect_list.append(self.read_int(8224, 8))
+                        connect_list.append(self.read_int(8232, 8))
+                        connect_list.append(self.read_int(8240, 8))
+                        connect_list.append(self.read_int(8248, 4))
+                        connect_list.append(self.read_int(8252, 4))
+                        connect_list.append(self.read_int(8256, 4))
+                        connect_list.append(self.read_int(8260, 6))
+                        connect_list.append(self.read_int(8266, 6))
+                        connect_list.append(self.read_int(8272, 16))
+                        connect_list.append(self.read_int(8288, 16))
+                        connect_list.append(self.read_int(8304, 16))
+                        connect_list.append(self.read_int(8320, 16))
+                        connect_list.append(self.read_int(8336, 16))
+                        connect_list.append(self.read_int(8352, 16))
+
+                        self.signal.read_result.emit('connect', connect_list)
+
+                    if self.tag == 'threshold':
+                        threshold_list = []
+                        threshold_list.append(self.read_int(8384, 10))
+                        threshold_list.append(self.read_int(8394, 20))
+
+                        self.signal.read_result.emit('threashold', threshold_list)
+
+                    time.sleep(1)
 
             except Exception as e:
                 self.signal.read_error.emit(str(e))
@@ -58,7 +83,6 @@ class Reader(QRunnable):
             else:
                 txt = 'ERROR read {} register'.format(hex(adr_reg))
                 self.signal.read_error.emit(txt)
-                self.read_int(adr_reg, num_reg)
 
         except Exception as e:
             self.signal.read_error.emit(str(e))
@@ -75,8 +99,9 @@ class Reader(QRunnable):
         except Exception as e:
             self.signal.read_error.emit(str(e))
 
-    def startRead(self, client):
+    def startRead(self, client, tag):
         self.client = client
+        self.tag = tag
         self.is_run = True
 
     def stopRead(self):
@@ -109,6 +134,7 @@ class Writer(QRunnable):
                         print('Enter write thread')
                         print('DATA, start_adr - {}, values - {}'.format(self.start_adr, temp_list))
                         rq = self.client.write_registers(self.start_adr, temp_list, unit=1)
+                        print('temp_list - {}'.format(temp_list))
                         time.sleep(0.1)
                         if not rq.isError():
                             print('Complite write reg')

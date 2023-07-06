@@ -8,7 +8,7 @@ from threads import Reader, Writer
 
 
 class WinSignals(QObject):
-    startRead = pyqtSignal(object)
+    startRead = pyqtSignal(object, str)
     stopRead = pyqtSignal()
     exitRead = pyqtSignal()
     startWrite = pyqtSignal(object, int, int)
@@ -17,7 +17,7 @@ class WinSignals(QObject):
     finish_read = pyqtSignal(str)
 
 
-class DataController:
+class DataContr:
     def __init__(self):
         self.time_msg = ''
         self.adr_dev = 0
@@ -38,7 +38,7 @@ class DataController:
         self.status_int = 0
 
 
-class SettingController:
+class SetBasicContr:
     def __init__(self):
         self.rz0 = 0
         self.rst_kontrol = 0
@@ -53,6 +53,10 @@ class SettingController:
         self.adr_ms = 0
         self.per_datch = 0
         self.per_obmen = 0
+
+
+class SetConnectContr:
+    def __init__(self):
         self.sel_type_trans_a = 0
         self.sel_type_trans_b = 0
         self.num_modem = 0
@@ -72,6 +76,10 @@ class SettingController:
         self.apn_modem_b = 0
         self.forse_en = 0
         self.gprs_per_norm = 0
+
+
+class SetThresholdContr:
+    def __init__(self):
         self.f_w_max = []
         self.f_wl_max = []
 
@@ -80,8 +88,10 @@ class Model:
     def __init__(self):
         self.signal = WinSignals()
         self.client = Client()
-        self.data_cont = DataController()
-        self.set_cont = SettingController()
+        self.contr_data = DataContr()
+        self.contr_setbasic = SetBasicContr()
+        self.contr_setConnect = SetConnectContr()
+        self.contr_setThresh = SetThresholdContr()
         self.threadpool = QThreadPool()
 
         self.com_port = ''
@@ -93,12 +103,14 @@ class Model:
     def connectContr(self):
         try:
             self.client.connectClient(self.com_port)
+
         except Exception as e:
             print(str(e))
 
     def closeContr(self):
         try:
             self.client.closeClient()
+
         except Exception as e:
             print(str(e))
 
@@ -111,8 +123,8 @@ class Model:
         self.signal.exitRead.connect(self.reader.exitRead)
         self.threadpool.start(self.reader)
 
-    def startRead(self):
-        self.signal.startRead.emit(self.client.client)
+    def startRead(self, tag):
+        self.signal.startRead.emit(self.client.client, tag)
 
     def stopRead(self):
         self.signal.stopRead.emit()
@@ -125,70 +137,15 @@ class Model:
 
     def readResult(self, tag, data):
         try:
-            if tag == 'block_1':
-                temp = 1
-                self.data_cont.time_msg = str(datetime.now())[11:-7]
+            temp = 0
+            if tag == 'basic':
+                print(data)
 
-                self.data_cont.adr_dev = data[0]
-                self.data_cont.num_dev = data[1]
-                self.data_cont.per_rstsyst = data[4]
+            if tag == 'connect':
+                print(data)
 
-            if tag == 'block_dw':
-                temp = 2
-                self.data_cont.f_w = []
-                self.data_cont.t_w = []
-                for i in range(0, self.set_cont.num_dw_forse * 2, 2):
-                    self.data_cont.f_w.append(data[i])
-                    self.data_cont.t_w.append(data[i + 1])
-
-            if tag == 'block_dwl_1':
-                temp = 3
-                self.data_cont.f_wl = []
-                self.data_cont.t_wl = []
-                self.data_cont.tp_wl = []
-                self.data_cont.u_wl = []
-                for i in range(0, len(data), 4):
-                    self.data_cont.f_wl.append(data[i])
-                    self.data_cont.t_wl.append(data[i + 1])
-                    self.data_cont.tp_wl.append(data[i + 2])
-                    self.data_cont.u_wl.append(data[i + 3])
-
-            if tag == 'block_dwl_2':
-                temp = 4
-                for i in range(0, len(data), 4):
-                    self.data_cont.f_wl.append(data[i])
-                    self.data_cont.t_wl.append(data[i + 1])
-                    self.data_cont.tp_wl.append(data[i + 2])
-                    self.data_cont.u_wl.append(data[i + 3])
-
-            if tag == 'block_end':
-                temp = 5
-                self.data_cont.t_vlagn = data[0]
-                self.data_cont.vlagn = data[1]
-                self.data_cont.napr_vetr = data[2]
-                self.data_cont.scor_vetr = round(unpack('f', pack('<HH', data[4], data[3]))[0], 2)
-                self.data_cont.napr_pit = round(unpack('f', pack('<HH', data[6], data[5]))[0], 2)
-                self.data_cont.t_ds18s20 = data[7]
-                self.data_cont.status_int = data[8]
-                self.viewTable('data')
-
-            if tag == 'block_nastr':
-                temp = 6
-                self.set_cont.sel_d_himid = data[0]
-                self.set_cont.sel_d_speed = data[1]
-                self.set_cont.sel_dw_forse = data[2]
-                self.set_cont.sel_dwl_forse = data[3]
-                self.set_cont.num_dw_forse = data[4]
-                self.set_cont.num_dwl_forse = data[5]
-                self.set_cont.adr_dw_forse = data[6]
-                self.set_cont.adr_dwl_forse = data[7]
-                self.set_cont.adr_ms = data[8]
-                self.set_cont.per_datch = data[9]
-                self.set_cont.per_obmen = data[10]
-                self.set_cont.sel_type_trans_a = data[11]
-                self.set_cont.sel_type_trans_b = data[12]
-                self.set_cont.num_modem = data[13]
-                self.viewTable('nastr')
+            if tag == 'threshold':
+                print(data)
 
         except Exception as e:
             print('ERROR in read result in {}'.format(temp))
@@ -201,20 +158,6 @@ class Model:
         except Exception as e:
             print('ERROR in view table')
             print(str(e))
-
-    def dopCodeBinToDec(self, value, bits=16):
-        try:
-            if value[:1] == '1':
-                val_temp = -(2 ** bits - int(value, 2))
-            else:
-                val_temp = int(value, 2)
-
-            return val_temp
-
-        except Exception as e:
-            print(str(e))
-            txt = 'ERROR in dopCodeBinToDec'
-            print(txt)
 
     def initWriter(self):
         self.writeVal = Writer()
@@ -240,6 +183,7 @@ class Model:
     def writeFinish(self):
         print('Write OK')
         self.flag_write = True
+        self.stopWrite()
 
     def writeValue(self, start_adr, value):
         try:

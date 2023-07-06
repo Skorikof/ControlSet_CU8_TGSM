@@ -1,7 +1,7 @@
 import sys
 import time
-
-from mainui import Ui_MainWindow, WriteWindow
+from tableui import TableView
+from mainui import Ui_MainWindow, WinWrite
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
@@ -12,8 +12,9 @@ class AppWindow(QMainWindow):
         self.model = model
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.win_write = WriteWindow()
+        self.win_write = WinWrite()
         self.win_write.setVisible(False)
+        self.table = TableView()
         self.com_port()
         self.buttons()
         self.initTable()
@@ -49,57 +50,26 @@ class AppWindow(QMainWindow):
     def buttons(self):
         try:
             self.ui.connect_BTN.clicked.connect(self.model.connectContr)
-            self.ui.read_nastr_BTN.clicked.connect(self.readNastrContr)
             self.ui.read_BTN.clicked.connect(self.readDataContr)
             self.ui.stop_BTN.clicked.connect(self.model.stopRead)
             self.win_write.cancel_value_btn.clicked.connect(self.winWriteCancel)
+            self.win_write.write_value_btn.clicked.connect(self.initWriteVal)
 
         except Exception as e:
             print(str(e))
 
     def initTable(self):
         try:
-            self.ui.tableWidget.setColumnCount(2)
-            self.ui.tableWidget.setRowCount(125)
-            self.ui.tableWidget.setHorizontalHeaderLabels(['Register', 'DATA'])
-            self.ui.tableWidget.setItem(0, 0, QTableWidgetItem('TIME_MSG'))
-            self.ui.tableWidget.setItem(1, 0, QTableWidgetItem('SEL_D_HIMID'))
-            self.ui.tableWidget.setItem(2, 0, QTableWidgetItem('SEL_D_SPEED'))
-            self.ui.tableWidget.setItem(3, 0, QTableWidgetItem('SEL_DW_FORSE'))
-            self.ui.tableWidget.setItem(4, 0, QTableWidgetItem('SEL_DWL_FORSE'))
-            self.ui.tableWidget.setItem(5, 0, QTableWidgetItem('NUM_DW_FORSE'))
-            self.ui.tableWidget.setItem(6, 0, QTableWidgetItem('NUM_DWL_FORSE'))
-            self.ui.tableWidget.setItem(7, 0, QTableWidgetItem('ADR_DW_FORSE'))
-            self.ui.tableWidget.setItem(8, 0, QTableWidgetItem('ADR_DWL_FORSE'))
-            self.ui.tableWidget.setItem(9, 0, QTableWidgetItem('ADR_MS'))
-            self.ui.tableWidget.setItem(10, 0, QTableWidgetItem('PER_DATCH'))
-            self.ui.tableWidget.setItem(11, 0, QTableWidgetItem('PER_OBMEN'))
-            self.ui.tableWidget.setItem(12, 0, QTableWidgetItem('SEL_TYPE_TRANS_A'))
-            self.ui.tableWidget.setItem(13, 0, QTableWidgetItem('SEL_TYPE_TRANS_B'))
-            self.ui.tableWidget.setItem(14, 0, QTableWidgetItem('NUM_MODEM'))
+            self.ui.tableWidget = self.table.initTableConnect(self.ui.tableWidget)
 
-            self.ui.tableWidget.setItem(15, 0, QTableWidgetItem('ADR_DEV'))
-            self.ui.tableWidget.setItem(16, 0, QTableWidgetItem('NUM_DEV'))
-            self.ui.tableWidget.setItem(17, 0, QTableWidgetItem('PER_RSTSYST'))
-            self.ui.tableWidget.setItem(18, 0, QTableWidgetItem('T_VLAGN'))
-            self.ui.tableWidget.setItem(19, 0, QTableWidgetItem('VLAGN'))
-            self.ui.tableWidget.setItem(20, 0, QTableWidgetItem('NAPR_VETR'))
-            self.ui.tableWidget.setItem(21, 0, QTableWidgetItem('SCOR_VETR'))
-            self.ui.tableWidget.setItem(22, 0, QTableWidgetItem('NAPR_PIT'))
-            self.ui.tableWidget.setItem(23, 0, QTableWidgetItem('T_DS18S20'))
-            self.ui.tableWidget.setItem(24, 0, QTableWidgetItem('STATUS_INT'))
-
-            self.ui.tableWidget.cellClicked[int, int].connect(self.clickedRowColumn)
 
         except Exception as e:
             print('ERROR in init table')
             print(str(e))
 
     def readDataContr(self):
-        self.model.startRead()
-
-    def readNastrContr(self):
-        self.model.startRead()
+        print('PUSH read')
+        self.model.startRead('basic')
 
     def winWriteShow(self, text_lbl, start_reg):
         try:
@@ -122,18 +92,21 @@ class AppWindow(QMainWindow):
 
     def initWriteVal(self):
         try:
+            print('\nInside function initWriteVal')
             if not self.model.flag_write:
+                print('self.model.flag_write = False')
                 temp = self.win_write.value_LE.text()
+                print('Value for write - {}'.format(temp))
                 if len(temp) > 0:
                     temp_u = int(temp)
-                    print(self.start_reg)
                     print('Command write, start_reg - {}, value - {}'.format(self.start_reg, temp_u))
                     self.model.startWrite(self.start_reg, temp_u)
                     self.win_write.setVisible(False)
+
                 else:
                     pass
             else:
-                pass
+                print('self.model.flag_write = True')
 
         except Exception as e:
             print(str(e))
