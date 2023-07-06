@@ -136,8 +136,8 @@ class Model:
         print(txt)
 
     def readResult(self, tag, data):
+        temp = 0
         try:
-            temp = 0
             if tag == 'basic':
                 print(data)
 

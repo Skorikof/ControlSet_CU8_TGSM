@@ -81,14 +81,16 @@ class TableView:
             print('ERROR in init table connect')
             print(str(e))
 
-    def initTableThreshold(self, table_obj):
+    def initTableThreshold(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl):
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(30)
-            for i in range(10):
-                table_obj.setItem(i, 0, QTableWidgetItem('F_{}_W_Max'.format(i + 1)))
-            for i in range(20):
-                table_obj.setItem(i + 10, 0, QTableWidgetItem('F_{}_WL_Max'.format(i + 1)))
+            num_row = 0
+            for i in range(num_dw):
+                table_obj.setItem(i, 0, QTableWidgetItem('F_{}_W_Max'.format(adr_dw + i)))
+                num_row += 1
+            for i in range(num_dwl):
+                table_obj.setItem(i + num_row, 0, QTableWidgetItem('F_{}_WL_Max'.format(adr_dwl + i)))
 
         except Exception as e:
             print('ERROR in init table threshold')
