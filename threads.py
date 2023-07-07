@@ -24,18 +24,24 @@ class Reader(QRunnable):
                 if not self.is_run:
                     time.sleep(0.01)
                 else:
-                    if self.tag == 'basic':
+                    temp = self.read_int(0, 1)
+                    if self.read_dict['basic_set'] == True:
                         basic_list = []
-                        basic_list.append(self.read_int(8194, 11))
-                        basic_list.append(self.read_int(0, 5))
-                        basic_list.append(self.read_int(4096, 20))
-                        basic_list.append(self.read_int(4116, 40))
-                        basic_list.append(self.read_int(4156, 40))
-                        basic_list.append(self.read_int(4208, 9))
+                        basic_list.append(self.read_int(8192, 13))
 
-                        self.signal.read_result.emit('basic', basic_list)
+                        self.signal.read_result.emit('basic_set', basic_list)
 
-                    if self.tag == 'connect':
+                    if self.read_dict['data'] == True:
+                        data_list = []
+                        data_list.append(self.read_int(0, 5))
+                        data_list.append(self.read_int(4096, 20))
+                        data_list.append(self.read_int(4116, 40))
+                        data_list.append(self.read_int(4156, 40))
+                        data_list.append(self.read_int(4208, 9))
+
+                        self.signal.read_result.emit('data', data_list)
+
+                    if self.read_dict['con_set'] == True:
                         connect_list = []
                         connect_list.append(self.read_int(8205, 5))
                         connect_list.append(self.read_int(8224, 8))
@@ -53,9 +59,9 @@ class Reader(QRunnable):
                         connect_list.append(self.read_int(8336, 16))
                         connect_list.append(self.read_int(8352, 16))
 
-                        self.signal.read_result.emit('connect', connect_list)
+                        self.signal.read_result.emit('con_set', connect_list)
 
-                    if self.tag == 'threshold':
+                    if self.read_dict['threshold'] == True:
                         threshold_list = []
                         threshold_list.append(self.read_int(8384, 10))
                         threshold_list.append(self.read_int(8394, 20))
@@ -99,9 +105,9 @@ class Reader(QRunnable):
         except Exception as e:
             self.signal.read_error.emit(str(e))
 
-    def startRead(self, client, tag):
+    def startRead(self, client, read_dict):
         self.client = client
-        self.tag = tag
+        self.read_dict = read_dict
         self.is_run = True
 
     def stopRead(self):

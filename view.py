@@ -1,9 +1,6 @@
-import sys
-import time
 from tableui import TableView
 from mainui import Ui_MainWindow, WinWrite
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow
 
 
 class AppWindow(QMainWindow):
@@ -17,9 +14,11 @@ class AppWindow(QMainWindow):
         self.table = TableView()
         self.com_port()
         self.buttons()
+        self.initCheckBox()
         self.initTable()
 
         self.start_reg = 0
+        self.read_dict = {'basic_set': False, 'data': False, 'threshold': False, 'con_set': False}
 
         self.model.signal.finish_read.connect(self.viewTable)
 
@@ -58,6 +57,34 @@ class AppWindow(QMainWindow):
         except Exception as e:
             print(str(e))
 
+    def initCheckBox(self):
+        try:
+            self.ui.basic_set_chb.setChecked(False)
+            self.ui.data_chb.setChecked(False)
+            self.ui.threshold_chb.setChecked(False)
+            self.ui.con_set_chb.setChecked(False)
+            self.ui.basic_set_chb.stateChanged.connect(lambda: self.initReadDict(self.ui.basic_set_chb, 'basic_set'))
+            self.ui.data_chb.stateChanged.connect(lambda: self.initReadDict(self.ui.data_chb, 'data'))
+            self.ui.threshold_chb.stateChanged.connect(lambda: self.initReadDict(self.ui.threshold_chb, 'threshold'))
+            self.ui.con_set_chb.stateChanged.connect(lambda: self.initReadDict(self.ui.con_set_chb, 'con_set'))
+
+        except Exception as e:
+            print('ERROR in init combobox')
+            print(str(e))
+
+    def initReadDict(self, chb, tag):
+        try:
+            if chb.isChecked():
+                self.read_dict[tag] = True
+            else:
+                self.read_dict[tag] = False
+
+            self.readDataContr()
+
+        except Exception as e:
+            print('ERROR init dict read')
+            print(str(e))
+
     def initTable(self):
         try:
             num_dw = self.model.contr_setbasic.num_dw_forse
@@ -75,7 +102,7 @@ class AppWindow(QMainWindow):
             print(str(e))
 
     def readDataContr(self):
-        self.model.startRead('basic')
+        self.model.startRead(self.read_dict)
 
     def winWriteShow(self, text_lbl, start_reg):
         try:

@@ -8,7 +8,7 @@ from threads import Reader, Writer
 
 
 class WinSignals(QObject):
-    startRead = pyqtSignal(object, str)
+    startRead = pyqtSignal(object, dict)
     stopRead = pyqtSignal()
     exitRead = pyqtSignal()
     startWrite = pyqtSignal(object, int, int)
@@ -40,6 +40,7 @@ class DataContr:
 
 class SetBasicContr:
     def __init__(self):
+        self.time_msg = ''
         self.rz0 = 0
         self.rst_kontrol = 0
         self.sel_d_himid = 0
@@ -57,6 +58,7 @@ class SetBasicContr:
 
 class SetConnectContr:
     def __init__(self):
+        self.time_msg = ''
         self.sel_type_trans_a = 0
         self.sel_type_trans_b = 0
         self.num_modem = 0
@@ -80,6 +82,7 @@ class SetConnectContr:
 
 class SetThresholdContr:
     def __init__(self):
+        self.time_msg = ''
         self.f_w_max = []
         self.f_wl_max = []
 
@@ -123,8 +126,8 @@ class Model:
         self.signal.exitRead.connect(self.reader.exitRead)
         self.threadpool.start(self.reader)
 
-    def startRead(self, tag):
-        self.signal.startRead.emit(self.client.client, tag)
+    def startRead(self, read_dict):
+        self.signal.startRead.emit(self.client.client, read_dict)
 
     def stopRead(self):
         self.signal.stopRead.emit()
@@ -138,19 +141,101 @@ class Model:
     def readResult(self, tag, data):
         temp = 0
         try:
-            if tag == 'basic':
-                print(data)
+            if tag == 'basic_set':
+                self.parsBasicSet(data)
 
-            if tag == 'connect':
-                print(data)
+            if tag == 'data':
+                self.parsData(data)
+
+            if tag == 'con_set':
+                self.parsConSet(data)
 
             if tag == 'threshold':
-                print(data)
+                self.parsThreshold(data)
 
         except Exception as e:
             print('ERROR in read result in {}'.format(temp))
             print(str(e))
 
+    def parsBasicSet(self, data):
+        try:
+            self.contr_setbasic.time_msg = datetime.now()[:-7]
+            self.contr_setbasic.rz0 = data[0]
+            self.contr_setbasic.rst_kontrol = data[1]
+            self.contr_setbasic.sel_d_himid = data[2]
+            self.contr_setbasic.sel_d_speed = data[3]
+            self.contr_setbasic.sel_dw_forse = data[4]
+            self.contr_setbasic.sel_dwl_forse = data[5]
+            self.contr_setbasic.num_dw_forse = data[6]
+            self.contr_setbasic.num_dwl_forse = data[7]
+            self.contr_setbasic.adr_dw_forse = data[8]
+            self.contr_setbasic.adr_dwl_forse = data[9]
+            self.contr_setbasic.adr_ms = data[10]
+            self.contr_setbasic.per_datch = data[11]
+            self.contr_setbasic.per_obmen = data[12]
+
+        except Exception as e:
+            print('ERROR in parsBasicSet')
+            print(str(e))
+
+    def parsData(self, data):
+        try:
+            self.contr_data.f_w = []
+            self.contr_data.t_w = []
+            self.contr_data.f_wl = []
+            self.contr_data.t_wl = []
+            self.contr_data.tp_wl = []
+            self.contr_data.u_wl = []
+
+            self.contr_data.time_msg = datetime.now()[:-7]
+            self.contr_data.adr_dev = data[0][0]
+            self.contr_data.num_dev = data[0][1]
+            self.contr_data.per_rstsyst = data[0][5]
+
+            for i in range(0, 20, 2):
+                self.contr_data.f_w.append(data[1][i])
+                self.contr_data.t_w.append(data[1][i + 1])
+
+            for i in range(2, 4):
+                for j in range(0, 40, 4):
+                    self.contr_data.f_wl.append(data[i][j])
+                    self.contr_data.t_wl.append(data[i][j + 1])
+                    self.contr_data.tp_wl.append(data[i][j + 2])
+                    self.contr_data.u_wl.append(data[i][j + 3])
+
+            self.contr_data.t_vlagn = data[4][0]
+            self.contr_data.vlagn = data[4][1]
+            self.contr_data.napr_vetr = data[4][2]
+            self.contr_data.scor_vetr = round(unpack('f', pack('<HH', data[4][4], data[4][3]))[0], 2)
+            self.contr_data.napr_pit = round(unpack('f', pack('<HH', data[4][6], data[4][5]))[0], 2)
+            self.contr_data.t_ds18s20 = data[4][7]
+            self.contr_data.status_int = data[4][8]
+
+        except Exception as e:
+            print('ERROR in parsData')
+            print(str(e))
+
+    def parsConSet(self, data):
+        try:
+            print(data)
+
+        except Exception as e:
+            print('ERROR in parsConSet')
+            print(str(e))
+
+    def parsThreshold(self, data):
+        try:
+            self.contr_setThresh.f_w_max = []
+            self.contr_setThresh.f_wl_max = []
+            for i in range(10):
+                self.contr_setThresh.f_w_max.append(data[0][i])
+
+            for i in range(20):
+                self.contr_setThresh.f_wl_max.append(data[1][i])
+
+        except Exception as e:
+            print('ERROR in parsThreshold')
+            print(str(e))
     def viewTable(self, tag):
         try:
             self.signal.finish_read.emit(tag)
