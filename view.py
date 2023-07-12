@@ -1,4 +1,5 @@
 from tableui import TableView
+from struct import pack, unpack
 from mainui import Ui_MainWindow, WinWrite
 from PyQt5.QtWidgets import QMainWindow
 
@@ -10,17 +11,18 @@ class AppWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.win_write = WinWrite()
-        self.win_write.setVisible(False)
         self.table = TableView()
         self.com_port()
         self.buttons()
         self.initCheckBox()
-        self.initTable()
+        self.initTableClicked()
 
         self.start_reg = 0
+        self.type_reg = 'number'
+        self.count_reg = 1
         self.read_dict = {'basic_set': False, 'data': False, 'threshold': False, 'con_set': False}
 
-        self.model.signal.finish_read.connect(self.viewTable)
+        self.model.signal.finish_read.connect(self.initTable)
 
     def closeEvent(self, event):
         self.model.exitRead()
@@ -51,8 +53,8 @@ class AppWindow(QMainWindow):
             self.ui.connect_btn.clicked.connect(self.model.connectContr)
             self.ui.read_btn.clicked.connect(self.readDataContr)
             self.ui.stop_btn.clicked.connect(self.model.stopRead)
-            self.win_write.cancel_value_btn.clicked.connect(self.winWriteCancel)
-            self.win_write.write_value_btn.clicked.connect(self.initWriteVal)
+
+            self.win_write.value_LE.returnPressed.connect(self.initWriteVal)
 
         except Exception as e:
             print(str(e))
@@ -79,208 +81,315 @@ class AppWindow(QMainWindow):
             else:
                 self.read_dict[tag] = False
 
-            self.readDataContr()
-
         except Exception as e:
             print('ERROR init dict read')
             print(str(e))
 
-    def initTable(self):
+    def initTable(self, tag):
         try:
-            num_dw = self.model.contr_setbasic.num_dw_forse
-            adr_dw = self.model.contr_setbasic.adr_dw_forse
-            num_dwl = self.model.contr_setbasic.num_dwl_forse
-            adr_dwl = self.model.contr_setbasic.adr_dwl_forse
-            self.ui.basic_set_table = self.table.initTableBasic(self.ui.basic_set_table)
-            self.ui.data_table = self.table.initTableData(self.ui.data_table, num_dw, adr_dw, num_dwl, adr_dwl)
-            self.ui.con_set_table = self.table.initTableConnect(self.ui.con_set_table)
-            self.ui.threshold_table = self.table.initTableThreshold(self.ui.threshold_table,
-                                                                    num_dw, adr_dw, num_dwl, adr_dwl)
+            num_dw = int(self.model.contr_setbasic.num_dw_forse)
+            adr_dw = int(self.model.contr_setbasic.adr_dw_forse)
+            num_dwl = int(self.model.contr_setbasic.num_dwl_forse)
+            adr_dwl = int(self.model.contr_setbasic.adr_dwl_forse)
+            if tag == 'basic_set':
+                self.ui.basic_set_table.clear()
+                self.table.initTableBasic(self.ui.basic_set_table, self.model.contr_setbasic)
+            if tag == 'data':
+                self.ui.data_table.clear()
+                self.table.initTableData(self.ui.data_table, num_dw, adr_dw, num_dwl, adr_dwl, self.model.contr_data)
+            if tag == 'con_set':
+                self.ui.con_set_table.clear()
+                self.table.initTableConnect(self.ui.con_set_table, self.model.contr_setConnect)
+            if tag == 'threshold':
+                self.ui.threshold_table.clear()
+                self.table.initTableThreshold(self.ui.threshold_table, num_dw, adr_dw, num_dwl, adr_dwl,
+                                              self.model.contr_setThresh)
 
         except Exception as e:
             print('ERROR in init table')
             print(str(e))
 
+    def initTableClicked(self):
+        self.ui.basic_set_table.cellClicked[int, int].connect(self.clickedTableBasic)
+        self.ui.data_table.cellClicked[int, int].connect(self.clickedTableData)
+        self.ui.con_set_table.cellClicked[int, int].connect(self.clickedTableConSet)
+        self.ui.threshold_table.cellClicked[int, int].connect(self.clickedTableThreshold)
+
     def readDataContr(self):
         self.model.startRead(self.read_dict)
 
-    def winWriteShow(self, text_lbl, start_reg):
+    def winWriteShow(self, text_lbl, start_reg, type_reg='number', count_reg=1):
         try:
             self.model.flag_write = False
             self.start_reg = start_reg
-            self.win_write.setVisible(True)
+            self.type_reg = type_reg
+            self.count_reg = count_reg
+            self.win_write.show()
             self.win_write.value_LE.clear()
+            self.win_write.value_LE.setFocus()
             self.win_write.label.setText(text_lbl)
-            self.win_write.value_LE.returnPressed.connect(self.initWriteVal)
-
-        except Exception as e:
-            print(str(e))
-
-    def winWriteCancel(self):
-        try:
-            self.win_write.close()
 
         except Exception as e:
             print(str(e))
 
     def initWriteVal(self):
         try:
-            print('\nInside function initWriteVal')
-            if not self.model.flag_write:
-                print('self.model.flag_write = False')
-                temp = self.win_write.value_LE.text()
-                print('Value for write - {}'.format(temp))
-                if len(temp) > 0:
-                    temp_u = int(temp)
-                    print('Command write, start_reg - {}, value - {}'.format(self.start_reg, temp_u))
-                    self.model.startWrite(self.start_reg, temp_u)
-                    self.win_write.setVisible(False)
+            ascii_list = []
+            msg_list = []
+            temp = self.win_write.value_LE.text()
+            if len(temp) > 0:
+                if self.type_reg == 'number':
+                    msg_list.append(int(temp))
 
-                else:
-                    pass
+                elif self.type_reg == 'symbol':
+                    for i in range(len(temp)):
+                        ascii_list.append(ord(temp[i]))
+
+                    ascii_list.append(0)
+
+                    while len(ascii_list) < self.count_reg * 2:
+                        ascii_list.append(35)
+
+                    for i in range(0, len(ascii_list), 2):
+                        temp_u = []
+                        temp_u.append(ascii_list[i])
+                        temp_u.append(ascii_list[i + 1])
+                        bytes_arr = bytes(temp_u)
+                        val_int = int.from_bytes(bytes_arr, byteorder='big', signed=False)
+                        msg_list.append(val_int)
+
+                self.win_write.close()
+                self.model.initWriter(self.start_reg, msg_list)
+
             else:
-                print('self.model.flag_write = True')
+                pass
 
         except Exception as e:
             print(str(e))
             print('ERROR in initWriteVal')
 
-    def viewTable(self, tag):
-        print(tag)
-        # try:
-        #     self.ui.tableWidget.blockSignals(True)
-        #     if tag == 'nastr':
-        #         temp = self.model.set_cont.adr_dw_forse
-        #         num_row = 25
-        #         for i in range(0, self.model.set_cont.num_dw_forse * 2, 2):
-        #             self.ui.tableWidget.setItem(num_row + i, 0, QTableWidgetItem('F_{}_W'.format(temp)))
-        #             self.ui.tableWidget.setItem(num_row + 1 + i, 0, QTableWidgetItem('T_{}_W'.format(temp)))
-        #             temp += 1
-        #
-        #         num_row = self.model.set_cont.num_dw_forse * 2 + 25
-        #         temp = self.model.set_cont.adr_dwl_forse
-        #         for i in range(0, self.model.set_cont.num_dwl_forse * 4, 4):
-        #             self.ui.tableWidget.setItem(num_row + i, 0, QTableWidgetItem('F_{}_WL'.format(temp)))
-        #             self.ui.tableWidget.setItem(num_row + 1 + i, 0, QTableWidgetItem('T_{}_WL'.format(temp)))
-        #             self.ui.tableWidget.setItem(num_row + 2 + i, 0, QTableWidgetItem('TP_{}_WL'.format(temp)))
-        #             self.ui.tableWidget.setItem(num_row + 3 + i, 0, QTableWidgetItem('U_{}_WL'.format(temp)))
-        #             temp += 1
-        #         er_cod = 1
-        #         self.ui.tableWidget.setItem(0, 1, QTableWidgetItem(str(self.model.data_cont.time_msg)))
-        #         self.ui.tableWidget.setItem(1, 1, QTableWidgetItem(str(self.model.set_cont.sel_d_himid)))
-        #         self.ui.tableWidget.setItem(2, 1, QTableWidgetItem(str(self.model.set_cont.sel_d_speed)))
-        #         self.ui.tableWidget.setItem(3, 1, QTableWidgetItem(str(self.model.set_cont.sel_dw_forse)))
-        #         self.ui.tableWidget.setItem(4, 1, QTableWidgetItem(str(self.model.set_cont.sel_dwl_forse)))
-        #         er_cod = 2
-        #         self.ui.tableWidget.setItem(5, 1, QTableWidgetItem(str(self.model.set_cont.num_dw_forse)))
-        #         self.ui.tableWidget.setItem(6, 1, QTableWidgetItem(str(self.model.set_cont.num_dwl_forse)))
-        #         self.ui.tableWidget.setItem(7, 1, QTableWidgetItem(str(self.model.set_cont.adr_dw_forse)))
-        #         self.ui.tableWidget.setItem(8, 1, QTableWidgetItem(str(self.model.set_cont.adr_dwl_forse)))
-        #         self.ui.tableWidget.setItem(9, 1, QTableWidgetItem(str(self.model.set_cont.adr_ms)))
-        #         er_cod = 3
-        #         self.ui.tableWidget.setItem(10, 1, QTableWidgetItem(str(self.model.set_cont.per_datch)))
-        #         self.ui.tableWidget.setItem(11, 1, QTableWidgetItem(str(self.model.set_cont.per_obmen)))
-        #         self.ui.tableWidget.setItem(12, 1, QTableWidgetItem(str(self.model.set_cont.sel_type_trans_a)))
-        #         self.ui.tableWidget.setItem(13, 1, QTableWidgetItem(str(self.model.set_cont.sel_type_trans_b)))
-        #         self.ui.tableWidget.setItem(14, 1, QTableWidgetItem(str(self.model.set_cont.num_modem)))
-        #         er_cod = 4
-        #
-        #     if tag == 'data':
-        #         self.ui.tableWidget.setItem(15, 1, QTableWidgetItem(str(self.model.data_cont.adr_dev)))
-        #         self.ui.tableWidget.setItem(16, 1, QTableWidgetItem(str(self.model.data_cont.num_dev)))
-        #         self.ui.tableWidget.setItem(17, 1, QTableWidgetItem(str(self.model.data_cont.per_rstsyst)))
-        #         er_cod = 5
-        #         self.ui.tableWidget.setItem(18, 1, QTableWidgetItem(str(self.model.data_cont.t_vlagn)))
-        #         self.ui.tableWidget.setItem(19, 1, QTableWidgetItem(str(self.model.data_cont.vlagn)))
-        #         self.ui.tableWidget.setItem(20, 1, QTableWidgetItem(str(self.model.data_cont.napr_vetr)))
-        #         self.ui.tableWidget.setItem(21, 1, QTableWidgetItem(str(self.model.data_cont.scor_vetr)))
-        #         er_cod = 8
-        #         self.ui.tableWidget.setItem(22, 1, QTableWidgetItem(str(self.model.data_cont.napr_pit)))
-        #         self.ui.tableWidget.setItem(23, 1, QTableWidgetItem(str(self.model.data_cont.t_ds18s20)))
-        #         self.ui.tableWidget.setItem(24, 1, QTableWidgetItem(str(self.model.data_cont.status_int)))
-        #         er_cod = 9
-        #
-        #         temp = 0
-        #         num_row = 25
-        #         for i in range(0, self.model.set_cont.num_dw_forse * 2, 2):
-        #             self.ui.tableWidget.setItem(num_row + i, 1, QTableWidgetItem(str(self.model.data_cont.f_w[temp])))
-        #             self.ui.tableWidget.setItem(num_row + 1 + i, 1, QTableWidgetItem(str(self.model.data_cont.t_w[temp])))
-        #             temp += 1
-        #         er_cod = 6
-        #
-        #         num_row = self.model.set_cont.num_dw_forse * 2 + 25
-        #         temp = 1
-        #         for i in range(0, self.model.set_cont.num_dwl_forse * 4, 4):
-        #             self.ui.tableWidget.setItem(num_row + i, 1, QTableWidgetItem(str(self.model.data_cont.f_wl[temp - 1])))
-        #             self.ui.tableWidget.setItem(num_row + 1 + i, 1, QTableWidgetItem(str(self.model.data_cont.t_wl[temp - 1])))
-        #             self.ui.tableWidget.setItem(num_row + 2 + i, 1, QTableWidgetItem(str(self.model.data_cont.tp_wl[temp - 1])))
-        #             self.ui.tableWidget.setItem(num_row + 3 + i, 1, QTableWidgetItem(str(self.model.data_cont.u_wl[temp - 1])))
-        #             temp += 1
-        #         er_cod = 7
-        #
-        #     self.ui.tableWidget.blockSignals(False)
-        #
-        # except Exception as e:
-        #     print('ERROR in view table in er_code = {}'.format(er_cod))
-        #     print(str(e))
-
-    def clickedRowColumn(self, r, c):
+    def clickedTableBasic(self, r, c):
         try:
             tag = ''
             start_reg = 0
-            if c == 1 and 0 < r < 15:
+            comm_write = False
+            if c == 1:
+                comm_write = True
                 if r == 1:
                     tag = 'SEL_D_HIMID'
                     start_reg = 8194
-                if r == 2:
+                elif r == 2:
                     tag = 'SEL_D_SPEED'
                     start_reg = 8195
-                if r == 3:
+                elif r == 3:
                     tag = 'SEL_DW_FORSE'
                     start_reg = 8196
-                if r == 4:
+                elif r == 4:
                     tag = 'SEL_DWL_FORSE'
                     start_reg = 8197
-                if r == 5:
+                elif r == 5:
                     tag = 'NUM_DW_FORSE'
                     start_reg = 8198
-                if r == 6:
+                elif r == 6:
                     tag = 'NUM_DWL_FORSE'
                     start_reg = 8199
-                if r == 7:
+                elif r == 7:
                     tag = 'ADR_DW_FORSE'
                     start_reg = 8200
-                if r == 8:
+                elif r == 8:
                     tag = 'ADR_DWL_FORSE'
                     start_reg = 8201
-                if r == 9:
+                elif r == 9:
                     tag = 'ADR_MS'
                     start_reg = 8202
-                if r == 10:
+                elif r == 10:
                     tag = 'PER_DATCH'
                     start_reg = 8203
-                if r == 11:
+                elif r == 11:
                     tag = 'PER_OBMEN'
                     start_reg = 8204
-                if r == 12:
-                    tag = 'SEL_TYPE_TRANS_A'
-                    start_reg = 8205
-                if r == 13:
-                    tag = 'SEL_TYPE_TRANS_B'
-                    start_reg = 8206
-                if r == 14:
-                    tag = 'NUM_MODEM'
-                    start_reg = 8207
-                if r == 16:
-                    tag = 'NUM_DEV'
-                    start_reg = 1
-                if r == 17:
-                    tag = 'PER_RSTSYST'
-                    start_reg = 4
+
+                else:
+                    comm_write = False
+            else:
+                pass
+
+            if comm_write:
+                print('tag - {}, start_reg - {}'.format(tag, start_reg))
                 self.winWriteShow(tag, start_reg)
             else:
                 pass
 
         except Exception as e:
-            print('ERROR in clickedRowColumn')
+            print('ERROR in clickedTableBasic')
+            print(str(e))
+
+    def clickedTableData(self, r, c):
+        try:
+            tag = ''
+            start_reg = 0
+            comm_write = False
+            if c == 1:
+                comm_write = True
+                if r == 2:
+                    tag = 'NUM_DEV'
+                    start_reg = 1
+                elif r == 3:
+                    tag = 'PER_RSTSYST'
+                    start_reg = 4
+                else:
+                    comm_write = False
+            else:
+                pass
+
+            if comm_write:
+                self.winWriteShow(tag, start_reg)
+            else:
+                pass
+
+        except Exception as e:
+            print('ERROR in clickedTableData')
+            print(str(e))
+
+    def clickedTableConSet(self, r, c):
+        try:
+            tag = ''
+            start_reg = 0
+            type_reg = 'number'
+            count_reg = 1
+            comm_write = False
+            if c == 1:
+                comm_write = True
+                type_reg = 'number'
+                if r == 1:
+                    tag = 'SEL_TYPE_TRANS_A'
+                    start_reg = 8205
+                elif r == 2:
+                    tag = 'SEL_TYPE_TRANS_B'
+                    start_reg = 8206
+                elif r == 3:
+                    tag = 'NUM_MODEM'
+                    start_reg = 8207
+                elif r == 4:
+                    tag = 'FORSE_EN'
+                    start_reg = 8208
+                elif r == 5:
+                    tag = 'GPRS_PER_NORM'
+                    start_reg = 8209
+                elif r == 6:
+                    tag = 'ADR_IP_MODEM_A'
+                    start_reg = 8224
+                    type_reg = 'symbol'
+                    count_reg = 8
+                elif r == 7:
+                    tag = 'ADR_IP_MODEM_B'
+                    start_reg = 8232
+                    type_reg = 'symbol'
+                    count_reg = 8
+                elif r == 8:
+                    tag = 'ADR_IP_PSD'
+                    start_reg = 8240
+                    type_reg = 'symbol'
+                    count_reg = 8
+                elif r == 9:
+                    tag = 'NUM_PORT_MODEM_A'
+                    start_reg = 8248
+                    type_reg = 'symbol'
+                    count_reg = 4
+                elif r == 10:
+                    tag = 'NUM_PORT_MODEM_B'
+                    start_reg = 8252
+                    type_reg = 'symbol'
+                    count_reg = 4
+                elif r == 11:
+                    tag = 'NUM_PORT_PSD'
+                    start_reg = 8256
+                    type_reg = 'symbol'
+                    count_reg = 4
+                elif r == 12:
+                    tag = 'NUM_TEL_A'
+                    start_reg = 8260
+                    type_reg = 'symbol'
+                    count_reg = 6
+                elif r == 13:
+                    tag = 'NUM_TEL_B'
+                    start_reg = 8266
+                    type_reg = 'symbol'
+                    count_reg = 6
+                elif r == 14:
+                    tag = 'LOGIN_MODEM_A'
+                    start_reg = 8272
+                    type_reg = 'symbol'
+                    count_reg = 16
+                elif r == 15:
+                    tag = 'LOGIN_MODEM_B'
+                    start_reg = 8288
+                    type_reg = 'symbol'
+                    count_reg = 16
+                elif r == 16:
+                    tag = 'PAROLE_MODEM_A'
+                    start_reg = 8304
+                    type_reg = 'symbol'
+                    count_reg = 16
+                elif r == 17:
+                    tag = 'PAROLE_MODEM_B'
+                    start_reg = 8320
+                    type_reg = 'symbol'
+                    count_reg = 16
+                elif r == 18:
+                    tag = 'APN_MODEM_A'
+                    start_reg = 8336
+                    type_reg = 'symbol'
+                    count_reg = 16
+                elif r == 19:
+                    tag = 'APN_MODEM_B'
+                    start_reg = 8352
+                    type_reg = 'symbol'
+                    count_reg = 16
+
+                else:
+                    comm_write = False
+
+            if comm_write:
+                self.winWriteShow(tag, start_reg, type_reg, count_reg)
+            else:
+                pass
+
+        except Exception as e:
+            print('ERROR in clickedTableConSet')
+            print(str(e))
+
+    def clickedTableThreshold(self, r, c):
+        try:
+            tag = ''
+            start_reg = ''
+            comm_write = False
+            if c == 1:
+                comm_write = True
+                adr_dw = int(self.model.contr_setbasic.adr_dw_forse)
+                num_dw = int(self.model.contr_setbasic.num_dw_forse)
+                adr_dwl = int(self.model.contr_setbasic.adr_dwl_forse)
+                num_dwl = int(self.model.contr_setbasic.num_dwl_forse)
+
+                if 0 < r <= num_dw + num_dwl:
+                    if r <= num_dw:
+                        tag = 'F_{}_W_Max'.format(adr_dw + r - 1)
+                        start_reg = 8384 + r - 1
+
+                    if r > num_dw:
+                        tag = 'F_{}_WL_Max'.format(adr_dwl + r - num_dw - 1)
+                        start_reg = 8394 + r - num_dw - 1
+
+                else:
+                    comm_write = False
+            else:
+                pass
+
+            if comm_write:
+                self.winWriteShow(tag, start_reg)
+            else:
+                pass
+
+        except Exception as e:
+            print('ERROR in clickedTableThreshold')
             print(str(e))

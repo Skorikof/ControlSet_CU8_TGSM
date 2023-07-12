@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1212</width>
-    <height>911</height>
+    <width>1240</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -178,35 +178,36 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>450</y>
+         <y>480</y>
          <width>272</width>
-         <height>361</height>
+         <height>295</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
          <width>272</width>
-         <height>325</height>
+         <height>295</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>272</width>
-         <height>16777215</height>
+         <height>295</height>
         </size>
        </property>
        <property name="rowCount">
-        <number>30</number>
+        <number>31</number>
        </property>
        <property name="columnCount">
         <number>2</number>
        </property>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>115</number>
-       </attribute>
        <attribute name="horizontalHeaderMinimumSectionSize">
         <number>39</number>
        </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>115</number>
+       </attribute>
+       <row/>
        <row/>
        <row/>
        <row/>
@@ -326,23 +327,23 @@
          <x>20</x>
          <y>40</y>
          <width>272</width>
-         <height>355</height>
+         <height>385</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
          <width>272</width>
-         <height>355</height>
+         <height>385</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>272</width>
-         <height>355</height>
+         <height>385</height>
         </size>
        </property>
        <property name="rowCount">
-        <number>11</number>
+        <number>12</number>
        </property>
        <property name="columnCount">
         <number>2</number>
@@ -350,6 +351,7 @@
        <attribute name="horizontalHeaderDefaultSectionSize">
         <number>122</number>
        </attribute>
+       <row/>
        <row/>
        <row/>
        <row/>
@@ -385,37 +387,38 @@
         <rect>
          <x>820</x>
          <y>40</y>
-         <width>327</width>
-         <height>595</height>
+         <width>410</width>
+         <height>625</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
-         <width>327</width>
-         <height>595</height>
+         <width>410</width>
+         <height>625</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>327</width>
-         <height>595</height>
+         <width>410</width>
+         <height>625</height>
         </size>
        </property>
        <property name="rowCount">
-        <number>19</number>
+        <number>20</number>
        </property>
        <property name="columnCount">
         <number>2</number>
        </property>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>151</number>
-       </attribute>
        <attribute name="horizontalHeaderMinimumSectionSize">
         <number>50</number>
+       </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>192</number>
        </attribute>
        <attribute name="verticalHeaderDefaultSectionSize">
         <number>30</number>
        </attribute>
+       <row/>
        <row/>
        <row/>
        <row/>
@@ -442,7 +445,7 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>410</y>
+         <y>440</y>
          <width>200</width>
          <height>30</height>
         </rect>
@@ -469,19 +472,19 @@
          <x>310</x>
          <y>40</y>
          <width>492</width>
-         <height>770</height>
+         <height>740</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
          <width>492</width>
-         <height>770</height>
+         <height>740</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>492</width>
-         <height>16777215</height>
+         <height>740</height>
         </size>
        </property>
        <property name="rowCount">
