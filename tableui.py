@@ -6,19 +6,19 @@ class TableView:
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(12)
-            table_obj.setHorizontalHeaderLabels(['Register', 'DATA'])
-            table_obj.setItem(0, 0, QTableWidgetItem('TIME_MSG'))
-            table_obj.setItem(1, 0, QTableWidgetItem('SEL_D_HIMID'))
-            table_obj.setItem(2, 0, QTableWidgetItem('SEL_D_SPEED'))
-            table_obj.setItem(3, 0, QTableWidgetItem('SEL_DW_FORSE'))
-            table_obj.setItem(4, 0, QTableWidgetItem('SEL_DWL_FORSE'))
-            table_obj.setItem(5, 0, QTableWidgetItem('NUM_DW_FORSE'))
-            table_obj.setItem(6, 0, QTableWidgetItem('NUM_DWL_FORSE'))
-            table_obj.setItem(7, 0, QTableWidgetItem('ADR_DW_FORSE'))
-            table_obj.setItem(8, 0, QTableWidgetItem('ADR_DWL_FORSE'))
-            table_obj.setItem(9, 0, QTableWidgetItem('ADR_MS'))
-            table_obj.setItem(10, 0, QTableWidgetItem('PER_DATCH'))
-            table_obj.setItem(11, 0, QTableWidgetItem('PER_OBMEN'))
+            table_obj.setHorizontalHeaderLabels(['Наименование', 'Значение'])
+            table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
+            table_obj.setItem(1, 0, QTableWidgetItem('Тип датчика\nвлажности'))
+            table_obj.setItem(2, 0, QTableWidgetItem('Тип датчика\nветра'))
+            table_obj.setItem(3, 0, QTableWidgetItem('Тип проводного\nдатчика усилия'))
+            table_obj.setItem(4, 0, QTableWidgetItem('Тип беспроводного\nдатчика усилия'))
+            table_obj.setItem(5, 0, QTableWidgetItem('Количество\nпроводных датчиков'))
+            table_obj.setItem(6, 0, QTableWidgetItem('количество\nбеспровоных датчиков'))
+            table_obj.setItem(7, 0, QTableWidgetItem('Начальный адрес\nпроводных датчиков'))
+            table_obj.setItem(8, 0, QTableWidgetItem('Начальный адрес\nбеспроводных датчиков'))
+            table_obj.setItem(9, 0, QTableWidgetItem('Адрес контроллера\nметеостанции'))
+            table_obj.setItem(10, 0, QTableWidgetItem('Период опроса\nдатчиков, сек'))
+            table_obj.setItem(11, 0, QTableWidgetItem('Период сеанса связи\nпункта наблюдения, сек'))
 
             table_obj.setItem(0, 1, QTableWidgetItem(data.time_msg))
             table_obj.setItem(1, 1, QTableWidgetItem(data.sel_d_himid))
@@ -40,40 +40,40 @@ class TableView:
     def initTableData(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl, data):
         try:
             table_obj.setColumnCount(5)
-            table_obj.setRowCount(41)
-            table_obj.setHorizontalHeaderLabels(['Register', 'DATA', 'DATA', 'DATA', 'DATA'])
-            table_obj.setItem(0, 0, QTableWidgetItem('TIME_MSG'))
-            table_obj.setItem(1, 0, QTableWidgetItem('ADR_DEV'))
-            table_obj.setItem(2, 0, QTableWidgetItem('NUM_DEV'))
-            table_obj.setItem(3, 0, QTableWidgetItem('PER_RSTSYST'))
-            table_obj.setItem(4, 0, QTableWidgetItem('T_VLAGN'))
-            table_obj.setItem(5, 0, QTableWidgetItem('VLAGN'))
-            table_obj.setItem(6, 0, QTableWidgetItem('NAPR_VETR'))
-            table_obj.setItem(7, 0, QTableWidgetItem('SCOR_VETR'))
-            table_obj.setItem(8, 0, QTableWidgetItem('NAPR_PIT'))
-            table_obj.setItem(9, 0, QTableWidgetItem('T_DS18S20'))
-            table_obj.setItem(10, 0, QTableWidgetItem('STATUS_INT'))
-
+            table_obj.setRowCount(42)
+            table_obj.setHorizontalHeaderLabels(['Наименование', 'Значение,\nВес, кг', 'Темература\nдатчика, ℃',
+                                                 'Температура\nпровода, ℃', 'Напряжение, В'])
+            table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
+            table_obj.setItem(1, 0, QTableWidgetItem('Номер контроллера'))
+            table_obj.setItem(2, 0, QTableWidgetItem('Программный сброс, мин'))
+            table_obj.setItem(3, 0, QTableWidgetItem('Температура с датчика\nвлажности, ℃'))
+            table_obj.setItem(4, 0, QTableWidgetItem('Влажность с датчика\nвлажности, %'))
+            table_obj.setItem(5, 0, QTableWidgetItem('Угол направления\nветра, град'))
+            table_obj.setItem(6, 0, QTableWidgetItem('Скорость ветра, м/сек'))
+            table_obj.setItem(7, 0, QTableWidgetItem('Напряжение питания, В'))
+            table_obj.setItem(8, 0, QTableWidgetItem('Значение внешнего\nтермометра DS18S20, ℃'))
+            table_obj.setItem(9, 0, QTableWidgetItem('Концевик шкафа'))
+            table_obj.setItem(10, 0, QTableWidgetItem('Проводные датчики'))
             num_row = 11
             for i in range(num_dw):
-                table_obj.setItem(num_row, 0, QTableWidgetItem('F & T {}_W'.format(adr_dw + i)))
+                table_obj.setItem(num_row, 0, QTableWidgetItem('Датчик №{}'.format(adr_dw + i)))
                 num_row += 1
 
+            table_obj.setItem(num_row, 0, QTableWidgetItem('Беспроводные датчики'))
             for i in range(num_dwl):
-                table_obj.setItem(num_row, 0, QTableWidgetItem('F & T & TP & U {}_WL'.format(adr_dwl + i)))
+                table_obj.setItem(num_row + 1, 0, QTableWidgetItem('Датчик №{}'.format(adr_dwl + i)))
                 num_row += 1
 
             table_obj.setItem(0, 1, QTableWidgetItem(data.time_msg))
-            table_obj.setItem(1, 1, QTableWidgetItem(data.adr_dev))
-            table_obj.setItem(2, 1, QTableWidgetItem(data.num_dev))
-            table_obj.setItem(3, 1, QTableWidgetItem(data.per_rstsyst))
-            table_obj.setItem(4, 1, QTableWidgetItem(data.t_vlagn))
-            table_obj.setItem(5, 1, QTableWidgetItem(data.vlagn))
-            table_obj.setItem(6, 1, QTableWidgetItem(data.napr_vetr))
-            table_obj.setItem(7, 1, QTableWidgetItem(data.scor_vetr))
-            table_obj.setItem(8, 1, QTableWidgetItem(data.napr_pit))
-            table_obj.setItem(9, 1, QTableWidgetItem(data.t_ds18s20))
-            table_obj.setItem(10, 1, QTableWidgetItem(data.status_int))
+            table_obj.setItem(1, 1, QTableWidgetItem(data.num_dev))
+            table_obj.setItem(2, 1, QTableWidgetItem(data.per_rstsyst))
+            table_obj.setItem(3, 1, QTableWidgetItem(data.t_vlagn))
+            table_obj.setItem(4, 1, QTableWidgetItem(data.vlagn))
+            table_obj.setItem(5, 1, QTableWidgetItem(data.napr_vetr))
+            table_obj.setItem(6, 1, QTableWidgetItem(data.scor_vetr))
+            table_obj.setItem(7, 1, QTableWidgetItem(data.napr_pit))
+            table_obj.setItem(8, 1, QTableWidgetItem(data.t_ds18s20))
+            table_obj.setItem(9, 1, QTableWidgetItem(data.status_int))
 
             num_row = 11
             for i in range(num_dw):
@@ -82,10 +82,10 @@ class TableView:
                 num_row += 1
 
             for i in range(num_dwl):
-                table_obj.setItem(num_row, 1, QTableWidgetItem(data.f_wl[i]))
-                table_obj.setItem(num_row, 2, QTableWidgetItem(data.t_wl[i]))
-                table_obj.setItem(num_row, 3, QTableWidgetItem(data.tp_wl[i]))
-                table_obj.setItem(num_row, 4, QTableWidgetItem(data.u_wl[i]))
+                table_obj.setItem(num_row + 1, 1, QTableWidgetItem(data.f_wl[i]))
+                table_obj.setItem(num_row + 1, 2, QTableWidgetItem(data.t_wl[i]))
+                table_obj.setItem(num_row + 1, 3, QTableWidgetItem(data.tp_wl[i]))
+                table_obj.setItem(num_row + 1, 4, QTableWidgetItem(data.u_wl[i]))
                 num_row += 1
 
         except Exception as e:
@@ -96,26 +96,27 @@ class TableView:
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(20)
-            table_obj.setItem(0, 0, QTableWidgetItem('TIME_MSG'))
-            table_obj.setItem(1, 0, QTableWidgetItem('SEL_TYPE_TRANS_A'))
-            table_obj.setItem(2, 0, QTableWidgetItem('SEL_TYPE_TRANS_B'))
-            table_obj.setItem(3, 0, QTableWidgetItem('NUM_MODEM'))
-            table_obj.setItem(4, 0, QTableWidgetItem('FORSE_EN'))
-            table_obj.setItem(5, 0, QTableWidgetItem('GPRS_PER_NORM'))
-            table_obj.setItem(6, 0, QTableWidgetItem('ADR_IP_MODEM_A'))
-            table_obj.setItem(7, 0, QTableWidgetItem('ADR_IP_MODEM_B'))
-            table_obj.setItem(8, 0, QTableWidgetItem('ADR_IP_PSD'))
-            table_obj.setItem(9, 0, QTableWidgetItem('NUM_PORT_MODEM_A'))
-            table_obj.setItem(10, 0, QTableWidgetItem('NUM_PORT_MODEM_B'))
-            table_obj.setItem(11, 0, QTableWidgetItem('NUM_PORT_PSD'))
-            table_obj.setItem(12, 0, QTableWidgetItem('NUM_TEL_A'))
-            table_obj.setItem(13, 0, QTableWidgetItem('NUM_TEL_B'))
-            table_obj.setItem(14, 0, QTableWidgetItem('LOGIN_MODEM_A'))
-            table_obj.setItem(15, 0, QTableWidgetItem('LOGIN_MODEM_B'))
-            table_obj.setItem(16, 0, QTableWidgetItem('PAROLE_MODEM_A'))
-            table_obj.setItem(17, 0, QTableWidgetItem('PAROLE_MODEM_B'))
-            table_obj.setItem(18, 0, QTableWidgetItem('APN_MODEM_A'))
-            table_obj.setItem(19, 0, QTableWidgetItem('APN_MODEM_B'))
+            table_obj.setHorizontalHeaderLabels(['Наименование', 'Значение'])
+            table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
+            table_obj.setItem(1, 0, QTableWidgetItem('Тип передачи\nпервого модема'))
+            table_obj.setItem(2, 0, QTableWidgetItem('Тип передачи\nвторого модема'))
+            table_obj.setItem(3, 0, QTableWidgetItem('Количество модемов'))
+            table_obj.setItem(4, 0, QTableWidgetItem('Отслеживание\nпревышения усилия'))
+            table_obj.setItem(5, 0, QTableWidgetItem('Период передачи GPRS\nв нормальных условиях, мин'))
+            table_obj.setItem(6, 0, QTableWidgetItem('Статический IP адрес\nпервого модема'))
+            table_obj.setItem(7, 0, QTableWidgetItem('Статический IP адрес\nвторого модема'))
+            table_obj.setItem(8, 0, QTableWidgetItem('Статический IP адрес\nПСД'))
+            table_obj.setItem(9, 0, QTableWidgetItem('Номер порта\nпервого модема'))
+            table_obj.setItem(10, 0, QTableWidgetItem('Номер порта\nвторого модема'))
+            table_obj.setItem(11, 0, QTableWidgetItem('Номер порта\nдля GPRS связи'))
+            table_obj.setItem(12, 0, QTableWidgetItem('Основной номер телефона\nпервого модема'))
+            table_obj.setItem(13, 0, QTableWidgetItem('Основной номер телефона\nвторого модема'))
+            table_obj.setItem(14, 0, QTableWidgetItem('Логин первого модема'))
+            table_obj.setItem(15, 0, QTableWidgetItem('Логин второго модема'))
+            table_obj.setItem(16, 0, QTableWidgetItem('Пароль первого модема'))
+            table_obj.setItem(17, 0, QTableWidgetItem('Пароль второго модема'))
+            table_obj.setItem(18, 0, QTableWidgetItem('APN первого модема'))
+            table_obj.setItem(19, 0, QTableWidgetItem('APN второго модема'))
 
             table_obj.setItem(0, 1, QTableWidgetItem(data.time_msg))
             table_obj.setItem(1, 1, QTableWidgetItem(data.sel_type_trans_a))
@@ -145,22 +146,27 @@ class TableView:
     def initTableThreshold(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl, data):
         try:
             table_obj.setColumnCount(2)
-            table_obj.setRowCount(31)
-            table_obj.setItem(0, 0, QTableWidgetItem('TIME_MSG'))
-            num_row = 1
+            table_obj.setRowCount(33)
+            table_obj.setHorizontalHeaderLabels(['Датчик', 'Пороговый вес, кг'])
+            table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
+            table_obj.setItem(1, 0, QTableWidgetItem('Проводные датчики'))
+            num_row = 2
             for i in range(num_dw):
-                table_obj.setItem(i + 1, 0, QTableWidgetItem('F_{}_W_Max'.format(adr_dw + i)))
+                table_obj.setItem(num_row, 0, QTableWidgetItem('Датчик №{}'.format(adr_dw + i)))
                 num_row += 1
+            table_obj.setItem(num_row, 0, QTableWidgetItem('Беспроводные датчики'))
             for i in range(num_dwl):
-                table_obj.setItem(i + num_row, 0, QTableWidgetItem('F_{}_WL_Max'.format(adr_dwl + i)))
+                table_obj.setItem(num_row + 1, 0, QTableWidgetItem('Датчик №{}'.format(adr_dwl + i)))
+                num_row += 1
 
             table_obj.setItem(0, 1, QTableWidgetItem(data.time_msg))
-            num_row = 1
+            num_row = 2
             for i in range(num_dw):
-                table_obj.setItem(i + 1, 1, QTableWidgetItem(data.f_w_max[i]))
+                table_obj.setItem(num_row, 1, QTableWidgetItem(data.f_w_max[i]))
                 num_row += 1
             for i in range(num_dwl):
-                table_obj.setItem(i + num_row, 1, QTableWidgetItem(data.f_wl_max[i]))
+                table_obj.setItem(num_row + 1, 1, QTableWidgetItem(data.f_wl_max[i]))
+                num_row += 1
 
         except Exception as e:
             print('ERROR in init table threshold')

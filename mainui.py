@@ -82,7 +82,7 @@ class Ui_MainWindow(object):
         item = QtWidgets.QTableWidgetItem()
         self.threshold_table.setItem(1, 1, item)
         self.threshold_table.horizontalHeader().setDefaultSectionSize(115)
-        self.threshold_table.horizontalHeader().setMinimumSectionSize(39)
+        self.threshold_table.verticalHeader().setDefaultSectionSize(40)
         self.data_chb = QtWidgets.QCheckBox(self.frame_2)
         self.data_chb.setGeometry(QtCore.QRect(330, 5, 200, 30))
         self.data_chb.setMinimumSize(QtCore.QSize(200, 30))
@@ -122,7 +122,8 @@ class Ui_MainWindow(object):
         self.basic_set_table.setItem(0, 0, item)
         item = QtWidgets.QTableWidgetItem()
         self.basic_set_table.setItem(8, 1, item)
-        self.basic_set_table.horizontalHeader().setDefaultSectionSize(122)
+        self.basic_set_table.horizontalHeader().setDefaultSectionSize(140)
+        self.basic_set_table.verticalHeader().setDefaultSectionSize(40)
         self.con_set_table = QtWidgets.QTableWidget(self.frame_2)
         self.con_set_table.setGeometry(QtCore.QRect(820, 40, 410, 625))
         self.con_set_table.setMinimumSize(QtCore.QSize(410, 625))
@@ -131,8 +132,7 @@ class Ui_MainWindow(object):
         self.con_set_table.setColumnCount(2)
         self.con_set_table.setObjectName("con_set_table")
         self.con_set_table.horizontalHeader().setDefaultSectionSize(192)
-        self.con_set_table.horizontalHeader().setMinimumSectionSize(50)
-        self.con_set_table.verticalHeader().setDefaultSectionSize(30)
+        self.con_set_table.verticalHeader().setDefaultSectionSize(40)
         self.threshold_chb = QtWidgets.QCheckBox(self.frame_2)
         self.threshold_chb.setGeometry(QtCore.QRect(40, 440, 200, 30))
         self.threshold_chb.setMinimumSize(QtCore.QSize(200, 30))
@@ -149,6 +149,7 @@ class Ui_MainWindow(object):
         self.data_table.setColumnCount(5)
         self.data_table.setObjectName("data_table")
         self.data_table.horizontalHeader().setDefaultSectionSize(90)
+        self.data_table.verticalHeader().setDefaultSectionSize(40)
         self.verticalLayout.addWidget(self.frame_2)
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -157,7 +158,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "CU8-TGSM"))
         self.connect_btn.setText(_translate("MainWindow", "Подключиться"))
         self.read_btn.setText(_translate("MainWindow", "Читать"))
         self.stop_btn.setText(_translate("MainWindow", "Остановить"))

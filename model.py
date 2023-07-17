@@ -1,5 +1,6 @@
 from client import Client
 from datetime import datetime
+from struct import pack, unpack
 from PyQt5.QtCore import QObject, QThreadPool, pyqtSignal
 from threads import Reader, Writer
 
@@ -159,21 +160,19 @@ class Model:
     def parsBasicSet(self, data):
         try:
             self.contr_setbasic.time_msg = str(datetime.now())[11:-7]
-            self.contr_setbasic.rz0 = str(data[0])
-            self.contr_setbasic.rst_kontrol = str(data[1])
-            self.contr_setbasic.sel_d_himid = str(data[2])
-            self.contr_setbasic.sel_d_speed = str(data[3])
-            self.contr_setbasic.sel_dw_forse = str(data[4])
-            self.contr_setbasic.sel_dwl_forse = str(data[5])
-            self.contr_setbasic.num_dw_forse = str(data[6])
-            self.contr_setbasic.num_dwl_forse = str(data[7])
-            self.contr_setbasic.adr_dw_forse = str(data[8])
-            self.contr_setbasic.adr_dwl_forse = str(data[9])
-            self.contr_setbasic.adr_ms = str(data[10])
-            self.contr_setbasic.per_datch = str(data[11])
-            self.contr_setbasic.per_obmen = str(data[12])
-
-            print(data)
+            self.contr_setbasic.rz0 = str(int(data[0], 2))
+            self.contr_setbasic.rst_kontrol = str(int(data[1], 2))
+            self.contr_setbasic.sel_d_himid = str(int(data[2], 2))
+            self.contr_setbasic.sel_d_speed = str(int(data[3], 2))
+            self.contr_setbasic.sel_dw_forse = str(int(data[4], 2))
+            self.contr_setbasic.sel_dwl_forse = str(int(data[5], 2))
+            self.contr_setbasic.num_dw_forse = str(int(data[6], 2))
+            self.contr_setbasic.num_dwl_forse = str(int(data[7], 2))
+            self.contr_setbasic.adr_dw_forse = str(int(data[8], 2))
+            self.contr_setbasic.adr_dwl_forse = str(int(data[9], 2))
+            self.contr_setbasic.adr_ms = str(int(data[10], 2))
+            self.contr_setbasic.per_datch = str(int(data[11], 2))
+            self.contr_setbasic.per_obmen = str(int(data[12], 2))
 
             self.signal.finish_read.emit('basic_set')
 
@@ -191,30 +190,28 @@ class Model:
             self.contr_data.u_wl = []
 
             self.contr_data.time_msg = str(datetime.now())[11:-7]
-            self.contr_data.adr_dev = str(data[0][0])
-            self.contr_data.num_dev = str(data[0][1])
-            self.contr_data.per_rstsyst = str(data[0][4])
+            self.contr_data.adr_dev = str(int(data[0][0], 2))
+            self.contr_data.num_dev = str(int(data[0][1], 2))
+            self.contr_data.per_rstsyst = str(int(data[0][4], 2))
 
             for i in range(0, 20, 2):
-                self.contr_data.f_w.append(str(data[1][i]))
-                self.contr_data.t_w.append(str(data[1][i + 1]))
+                self.contr_data.f_w.append(str(self.dopCodeBintoDec(data[1][i])))
+                self.contr_data.t_w.append(str(self.dopCodeBintoDec(data[1][i + 1])))
 
             for i in range(2, 4):
                 for j in range(0, 40, 4):
-                    self.contr_data.f_wl.append(str(data[i][j]))
-                    self.contr_data.t_wl.append(str(data[i][j + 1]))
-                    self.contr_data.tp_wl.append(str(data[i][j + 2]))
-                    self.contr_data.u_wl.append(str(data[i][j + 3]))
+                    self.contr_data.f_wl.append(str(self.dopCodeBintoDec(data[i][j])))
+                    self.contr_data.t_wl.append(str(self.dopCodeBintoDec(data[i][j + 1])))
+                    self.contr_data.tp_wl.append(str(self.dopCodeBintoDec(data[i][j + 2])))
+                    self.contr_data.u_wl.append(str(self.dopCodeBintoDec(data[i][j + 3]) * 0.1))
 
-            self.contr_data.t_vlagn = str(data[4][0])
-            self.contr_data.vlagn = str(data[4][1])
-            self.contr_data.napr_vetr = str(data[4][2])
-            self.contr_data.scor_vetr = str(data[5][0])
-            self.contr_data.napr_pit = str(data[5][1])
-            self.contr_data.t_ds18s20 = str(data[6][0])
-            self.contr_data.status_int = str(data[6][1])
-
-            print(data)
+            self.contr_data.t_vlagn = str(self.dopCodeBintoDec(data[4][0]))
+            self.contr_data.vlagn = str(self.dopCodeBintoDec(data[4][1]))
+            self.contr_data.napr_vetr = str(int(data[4][2], 2))
+            self.contr_data.scor_vetr = str(self.msgBintoFloat(data[4][3], data[4][4]))
+            self.contr_data.napr_pit = str(self.msgBintoFloat(data[4][5], data[4][6]))
+            self.contr_data.t_ds18s20 = str(self.dopCodeBintoDec(data[4][7]))
+            self.contr_data.status_int = str(int(data[4][8], 2))
 
             self.signal.finish_read.emit('data')
 
@@ -225,28 +222,26 @@ class Model:
     def parsConSet(self, data):
         try:
             self.contr_setConnect.time_msg = str(datetime.now())[11:-7]
-            self.contr_setConnect.sel_type_trans_a = str(data[0][0])
-            self.contr_setConnect.sel_type_trans_b = str(data[0][1])
-            self.contr_setConnect.num_modem = str(data[0][2])
-            self.contr_setConnect.forse_en = str(data[0][3])
-            self.contr_setConnect.gprs_per_norm = str(data[0][4])
+            self.contr_setConnect.sel_type_trans_a = str(int(data[0][0], 2))
+            self.contr_setConnect.sel_type_trans_b = str(int(data[0][1], 2))
+            self.contr_setConnect.num_modem = str(int(data[0][2], 2))
+            self.contr_setConnect.forse_en = str(int(data[0][3], 2))
+            self.contr_setConnect.gprs_per_norm = str(int(data[0][4], 2))
 
-            self.contr_setConnect.adr_ip_modem_a = str(data[1][0])
-            self.contr_setConnect.adr_ip_modem_b = str(data[2][0])
-            self.contr_setConnect.adr_ip_psd = str(data[3][0])
-            self.contr_setConnect.num_port_modem_a = str(data[4][0])
-            self.contr_setConnect.num_port_modem_b = str(data[5][0])
-            self.contr_setConnect.num_port_psd = str(data[6][0])
-            self.contr_setConnect.num_tel_a = str(data[7][0])
-            self.contr_setConnect.num_tel_b = str(data[8][0])
-            self.contr_setConnect.login_modem_a = str(data[9][0])
-            self.contr_setConnect.login_modem_b = str(data[10][0])
-            self.contr_setConnect.parole_modem_a = str(data[11][0])
-            self.contr_setConnect.parole_modem_b = str(data[12][0])
-            self.contr_setConnect.apn_modem_a = str(data[13][0])
-            self.contr_setConnect.apn_modem_b = str(data[14][0])
-
-            print(data)
+            self.contr_setConnect.adr_ip_modem_a = str(self.msgBintoSymbol(data[1]))
+            self.contr_setConnect.adr_ip_modem_b = str(self.msgBintoSymbol(data[2]))
+            self.contr_setConnect.adr_ip_psd = str(self.msgBintoSymbol(data[3]))
+            self.contr_setConnect.num_port_modem_a = str(self.msgBintoSymbol(data[4]))
+            self.contr_setConnect.num_port_modem_b = str(self.msgBintoSymbol(data[5]))
+            self.contr_setConnect.num_port_psd = str(self.msgBintoSymbol(data[6]))
+            self.contr_setConnect.num_tel_a = str(self.msgBintoSymbol(data[7]))
+            self.contr_setConnect.num_tel_b = str(self.msgBintoSymbol(data[8]))
+            self.contr_setConnect.login_modem_a = str(self.msgBintoSymbol(data[9]))
+            self.contr_setConnect.login_modem_b = str(self.msgBintoSymbol(data[10]))
+            self.contr_setConnect.parole_modem_a = str(self.msgBintoSymbol(data[11]))
+            self.contr_setConnect.parole_modem_b = str(self.msgBintoSymbol(data[12]))
+            self.contr_setConnect.apn_modem_a = str(self.msgBintoSymbol(data[13]))
+            self.contr_setConnect.apn_modem_b = str(self.msgBintoSymbol(data[14]))
 
             self.signal.finish_read.emit('con_set')
 
@@ -260,17 +255,57 @@ class Model:
             self.contr_setThresh.f_w_max = []
             self.contr_setThresh.f_wl_max = []
             for i in range(10):
-                self.contr_setThresh.f_w_max.append(str(data[0][i]))
+                self.contr_setThresh.f_w_max.append(str(int(data[0][i], 2)))
 
             for i in range(20):
-                self.contr_setThresh.f_wl_max.append(str(data[1][i]))
-
-            print(data)
+                self.contr_setThresh.f_wl_max.append(str(int(data[1][i], 2)))
 
             self.signal.finish_read.emit('threshold')
 
         except Exception as e:
             print('ERROR in parsThreshold')
+            print(str(e))
+
+    def dopCodeBintoDec(self, value, bits=16):
+        try:
+            if value[:1] == '1':
+                val_temp = -(2 ** bits - int(value, 2))
+            else:
+                val_temp = int(value, 2)
+
+            return val_temp
+
+        except Exception as e:
+            print('ERROR in dopCodeBintoDec')
+            print(str(e))
+
+    def msgBintoFloat(self, first_val, second_val):
+        try:
+
+            return round(unpack('f', pack('<HH', int(second_val, 2), int(first_val, 2)))[0], 2)
+
+        except Exception as e:
+            print('ERROR in msgBintoFloat')
+            print(str(e))
+
+    def msgBintoSymbol(self, value_list):
+        try:
+            temp_val = ''
+            temp_list = [int(i, 2) for i in value_list]
+            for i in range(len(temp_list)):
+                bytes = temp_list[i].to_bytes(2, byteorder='big', signed=False)
+                temp_val = temp_val + chr(bytes[0]) + chr(bytes[1])
+            msg = ''
+            for i in range(len(temp_val)):
+                if temp_val[i] != '\00':
+                    msg = msg + temp_val[i]
+                else:
+                    break
+
+            return msg
+
+        except Exception as e:
+            print('ERROR in msgBintoSymbol')
             print(str(e))
 
     def initWriter(self, start_adr, values):
