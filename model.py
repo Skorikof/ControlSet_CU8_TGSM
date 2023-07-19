@@ -9,9 +9,6 @@ class WinSignals(QObject):
     startRead = pyqtSignal(object, dict)
     stopRead = pyqtSignal()
     exitRead = pyqtSignal()
-    startWrite = pyqtSignal(object, int, int)
-    stopWrite = pyqtSignal()
-    exitWrite = pyqtSignal()
     finish_read = pyqtSignal(str)
 
 
@@ -110,7 +107,10 @@ class Model:
 
     def closeContr(self):
         try:
-            self.client.closeClient()
+            if self.client.flag_connect:
+                self.client.closeClient()
+            else:
+                pass
 
         except Exception as e:
             print(str(e))
@@ -162,10 +162,10 @@ class Model:
             self.contr_setbasic.time_msg = str(datetime.now())[11:-7]
             self.contr_setbasic.rz0 = str(int(data[0], 2))
             self.contr_setbasic.rst_kontrol = str(int(data[1], 2))
-            self.contr_setbasic.sel_d_himid = str(int(data[2], 2))
-            self.contr_setbasic.sel_d_speed = str(int(data[3], 2))
-            self.contr_setbasic.sel_dw_forse = str(int(data[4], 2))
-            self.contr_setbasic.sel_dwl_forse = str(int(data[5], 2))
+            self.contr_setbasic.sel_d_himid = self.createTableBasic('sel_d_himid', str(int(data[2], 2)))
+            self.contr_setbasic.sel_d_speed = self.createTableBasic('sel_d_speed', str(int(data[3], 2)))
+            self.contr_setbasic.sel_dw_forse = self.createTableBasic('sel_dw_forse', str(int(data[4], 2)))
+            self.contr_setbasic.sel_dwl_forse = self.createTableBasic('sel_dwl_forse', str(int(data[5], 2)))
             self.contr_setbasic.num_dw_forse = str(int(data[6], 2))
             self.contr_setbasic.num_dwl_forse = str(int(data[7], 2))
             self.contr_setbasic.adr_dw_forse = str(int(data[8], 2))
@@ -178,6 +178,51 @@ class Model:
 
         except Exception as e:
             print('ERROR in parsBasicSet')
+            print(str(e))
+
+    def createTableBasic(self, tag, data):
+        try:
+            value = ''
+            if tag == 'sel_d_himid':
+                if data == '0':
+                    value = 'SHT75'
+                elif data == '1':
+                    value = 'SHT85'
+                elif data == '2':
+                    value = 'HIH6000-HIH9000'
+                elif data == '3':
+                    value = 'Метеостанция'
+                else:
+                    value = ''
+
+            elif tag == 'sel_d_speed':
+                if data == '0':
+                    value = 'DEVIS'
+                elif data == '1':
+                    value = 'Метеостанция'
+                else:
+                    value = ''
+
+            elif tag == 'sel_dw_forse':
+                if data == '0':
+                    value = 'ASCII'
+                elif data == '1':
+                    value = 'MODBUS-RTU'
+                else:
+                    value = ''
+
+            elif tag == 'sel_dwl_forse':
+                if data == '0':
+                    value = 'Селезнёв'
+                elif data == '1':
+                    value = 'Седышев'
+                else:
+                    value = ''
+
+            return value
+
+        except Exception as e:
+            print('ERROR in createTable')
             print(str(e))
 
     def parsData(self, data):
@@ -203,7 +248,7 @@ class Model:
                     self.contr_data.f_wl.append(str(self.dopCodeBintoDec(data[i][j])))
                     self.contr_data.t_wl.append(str(self.dopCodeBintoDec(data[i][j + 1])))
                     self.contr_data.tp_wl.append(str(self.dopCodeBintoDec(data[i][j + 2])))
-                    self.contr_data.u_wl.append(str(self.dopCodeBintoDec(data[i][j + 3]) * 0.1))
+                    self.contr_data.u_wl.append(str(round(self.dopCodeBintoDec(data[i][j + 3]) * 0.1, 2)))
 
             self.contr_data.t_vlagn = str(self.dopCodeBintoDec(data[4][0]))
             self.contr_data.vlagn = str(self.dopCodeBintoDec(data[4][1]))
@@ -211,7 +256,7 @@ class Model:
             self.contr_data.scor_vetr = str(self.msgBintoFloat(data[4][3], data[4][4]))
             self.contr_data.napr_pit = str(self.msgBintoFloat(data[4][5], data[4][6]))
             self.contr_data.t_ds18s20 = str(self.dopCodeBintoDec(data[4][7]))
-            self.contr_data.status_int = str(int(data[4][8], 2))
+            self.contr_data.status_int = self.createDataTable('status_int', str(int(data[4][8], 2)))
 
             self.signal.finish_read.emit('data')
 
@@ -219,13 +264,30 @@ class Model:
             print('ERROR in parsData')
             print(str(e))
 
+    def createDataTable(self, tag, data):
+        try:
+            value = ''
+            if tag == 'status_int':
+                if data == '0':
+                    value = 'Открыто'
+                elif data == '1':
+                    value = 'Закрыто'
+                else:
+                    value = ''
+
+            return value
+
+        except Exception as e:
+            print('ERROR in createDataTable')
+            print(str(e))
+
     def parsConSet(self, data):
         try:
             self.contr_setConnect.time_msg = str(datetime.now())[11:-7]
-            self.contr_setConnect.sel_type_trans_a = str(int(data[0][0], 2))
-            self.contr_setConnect.sel_type_trans_b = str(int(data[0][1], 2))
-            self.contr_setConnect.num_modem = str(int(data[0][2], 2))
-            self.contr_setConnect.forse_en = str(int(data[0][3], 2))
+            self.contr_setConnect.sel_type_trans_a = self.createConSetTable('sel_type_trans', str(int(data[0][0], 2)))
+            self.contr_setConnect.sel_type_trans_b = self.createConSetTable('sel_type_trans', str(int(data[0][1], 2)))
+            self.contr_setConnect.num_modem = self.createConSetTable('num_modem', str(int(data[0][2], 2)))
+            self.contr_setConnect.forse_en = self.createConSetTable('forse_en', str(int(data[0][3], 2)))
             self.contr_setConnect.gprs_per_norm = str(int(data[0][4], 2))
 
             self.contr_setConnect.adr_ip_modem_a = str(self.msgBintoSymbol(data[1]))
@@ -247,6 +309,41 @@ class Model:
 
         except Exception as e:
             print('ERROR in parsConSet')
+            print(str(e))
+
+    def createConSetTable(self, tag, data):
+        try:
+            value = ''
+            if tag == 'sel_type_trans':
+                if data == '0':
+                    value = 'DATA-modem'
+                elif data == '1':
+                    value = 'GPRS, dynamic IP'
+                elif data == '2':
+                    value = 'GPRS, static IP'
+                else:
+                    value = ''
+
+            if tag == 'num_modem':
+                if data == '0':
+                    value = 'Один модем'
+                elif data == '1':
+                    value = 'Два модема'
+                else:
+                    value = ''
+
+            if tag == 'forse_en':
+                if data == '0':
+                    value = 'Не произвоится'
+                elif data == '1':
+                    value = 'Производится'
+                else:
+                    value = ''
+
+            return value
+
+        except Exception as e:
+            print('ERROR in createConSetTable')
             print(str(e))
 
     def parsThreshold(self, data):

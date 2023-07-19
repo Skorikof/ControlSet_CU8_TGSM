@@ -180,20 +180,23 @@
          <x>20</x>
          <y>480</y>
          <width>272</width>
-         <height>295</height>
+         <height>300</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
          <width>272</width>
-         <height>295</height>
+         <height>300</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>272</width>
-         <height>295</height>
+         <height>300</height>
         </size>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="rowCount">
         <number>31</number>
@@ -206,6 +209,9 @@
        </attribute>
        <attribute name="horizontalHeaderDefaultSectionSize">
         <number>115</number>
+       </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>40</number>
        </attribute>
        <row/>
        <row/>
@@ -342,6 +348,21 @@
          <height>385</height>
         </size>
        </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="tabKeyNavigation">
+        <bool>true</bool>
+       </property>
+       <property name="showDropIndicator" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+       <property name="cornerButtonEnabled">
+        <bool>true</bool>
+       </property>
        <property name="rowCount">
         <number>12</number>
        </property>
@@ -350,6 +371,9 @@
        </property>
        <attribute name="horizontalHeaderDefaultSectionSize">
         <number>122</number>
+       </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>40</number>
        </attribute>
        <row/>
        <row/>
@@ -388,20 +412,23 @@
          <x>820</x>
          <y>40</y>
          <width>410</width>
-         <height>625</height>
+         <height>740</height>
         </rect>
        </property>
        <property name="minimumSize">
         <size>
          <width>410</width>
-         <height>625</height>
+         <height>740</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>410</width>
-         <height>625</height>
+         <height>740</height>
         </size>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="rowCount">
         <number>20</number>
@@ -416,7 +443,7 @@
         <number>192</number>
        </attribute>
        <attribute name="verticalHeaderDefaultSectionSize">
-        <number>30</number>
+        <number>40</number>
        </attribute>
        <row/>
        <row/>
@@ -487,8 +514,11 @@
          <height>740</height>
         </size>
        </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
        <property name="rowCount">
-        <number>31</number>
+        <number>42</number>
        </property>
        <property name="columnCount">
         <number>5</number>
@@ -496,6 +526,20 @@
        <attribute name="horizontalHeaderDefaultSectionSize">
         <number>90</number>
        </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>40</number>
+       </attribute>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
+       <row/>
        <row/>
        <row/>
        <row/>

@@ -171,3 +171,4 @@ class TableView:
         except Exception as e:
             print('ERROR in init table threshold')
             print(str(e))
+

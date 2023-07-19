@@ -17,16 +17,17 @@ class AppWindow(QMainWindow):
         self.initCheckBox()
         self.initTableClicked()
 
+        self.type_ui = 'LineEdit'
         self.start_reg = 0
         self.type_reg = 'number'
         self.count_reg = 1
+        self.write_value = ''
         self.read_dict = {'basic_set': False, 'data': False, 'threshold': False, 'con_set': False}
 
         self.model.signal.finish_read.connect(self.initTable)
 
     def closeEvent(self, event):
         self.model.exitRead()
-        self.model.exitWrite()
         self.model.closeContr()
         self.close()
 
@@ -55,6 +56,8 @@ class AppWindow(QMainWindow):
             self.ui.stop_btn.clicked.connect(self.model.stopRead)
 
             self.win_write.value_LE.returnPressed.connect(self.initWriteVal)
+            self.win_write.write_value_btn.clicked.connect(self.initWriteVal)
+            self.win_write.cancel_value_btn.clicked.connect(self.winWriteClose)
 
         except Exception as e:
             print(str(e))
@@ -118,25 +121,84 @@ class AppWindow(QMainWindow):
     def readDataContr(self):
         self.model.startRead(self.read_dict)
 
-    def winWriteShow(self, text_lbl, start_reg, type_reg='number', count_reg=1):
+    def winWriteShow(self, text_lbl, type_ui, start_reg, type_reg='number', count_reg=1):
         try:
             self.model.flag_write = False
+            self.type_ui = type_ui
             self.start_reg = start_reg
             self.type_reg = type_reg
             self.count_reg = count_reg
             self.win_write.show()
-            self.win_write.value_LE.clear()
-            self.win_write.value_LE.setFocus()
             self.win_write.label.setText(text_lbl)
+            if self.type_ui == 'LineEdit':
+                self.win_write.comboBox.setVisible(False)
+                self.win_write.value_LE.setVisible(True)
+                self.win_write.value_LE.clear()
+                self.win_write.value_LE.setFocus()
+
+            elif self.type_ui == 'ComboBox':
+                self.win_write.value_LE.setVisible(False)
+                self.win_write.comboBox.setVisible(True)
+                self.win_write.comboBox.clear()
+                self.initComboBox()
 
         except Exception as e:
+            print(str(e))
+
+    def initComboBox(self):
+        try:
+            self.selectComboBox(0)
+            if self.start_reg == 8194:
+                self.win_write.comboBox.addItems(['SHT75', 'SHT85', 'HIH6000-HIH9000', 'Метеостанция'])
+
+            elif self.start_reg == 8195:
+                self.win_write.comboBox.addItems(['DEVIS', 'Метеостанция'])
+
+            elif self.start_reg == 8196:
+                self.win_write.comboBox.addItems(['Протокол обмена ASCII', 'Протокол обмена MODBUS-RTU'])
+
+            elif self.start_reg == 8197:
+                self.win_write.comboBox.addItems(['Датчики Селезнёва', 'Датчики Седышева'])
+
+            elif self.start_reg == 8205 or self.start_reg == 8206:
+                self.win_write.comboBox.addItems(['DATA-modem', 'GPRS, динамический IP', 'GPRS, статический IP'])
+
+            elif self.start_reg == 8207:
+                self.win_write.comboBox.addItems(['Один модем', 'Два модема'])
+
+            elif self.start_reg == 8208:
+                self.win_write.comboBox.addItems(['Не отслеживается', 'Отслеживается'])
+
+            self.win_write.comboBox.activated[int].connect(self.selectComboBox)
+
+        except Exception as e:
+            print('ERROR in initComboBox')
+            print(str(e))
+
+    def selectComboBox(self, value):
+        try:
+            self.write_value = str(value)
+
+        except Exception as e:
+            print('ERROR in selectComboBox')
+            print(str(e))
+
+    def winWriteClose(self):
+        try:
+            self.win_write.close()
+
+        except Exception as e:
+            print('ERROR in winWriteClose')
             print(str(e))
 
     def initWriteVal(self):
         try:
             ascii_list = []
             msg_list = []
-            temp = self.win_write.value_LE.text()
+            if self.type_ui == 'LineEdit':
+                temp = self.win_write.value_LE.text()
+            else:
+                temp = self.write_value
             if len(temp) > 0:
                 if self.type_reg == 'number':
                     msg_list.append(int(temp))
@@ -173,41 +235,53 @@ class AppWindow(QMainWindow):
             tag = ''
             start_reg = 0
             comm_write = False
+            type_ui = 'LineEdit'
             if c == 1:
                 comm_write = True
                 if r == 1:
-                    tag = 'SEL_D_HIMID'
+                    tag = 'Тип датчика влажности'
                     start_reg = 8194
+                    type_ui = 'ComboBox'
                 elif r == 2:
-                    tag = 'SEL_D_SPEED'
+                    tag = 'Тип датчика направления и скорости ветра'
                     start_reg = 8195
+                    type_ui = 'ComboBox'
                 elif r == 3:
-                    tag = 'SEL_DW_FORSE'
+                    tag = 'Тип проводных датчиков усилия'
                     start_reg = 8196
+                    type_ui = 'ComboBox'
                 elif r == 4:
-                    tag = 'SEL_DWL_FORSE'
+                    tag = 'Тип беспроводных датчиков усилия'
                     start_reg = 8197
+                    type_ui = 'ComboBox'
                 elif r == 5:
-                    tag = 'NUM_DW_FORSE'
+                    tag = 'Количество проводных датчиков усилия'
                     start_reg = 8198
+                    type_ui = 'LineEdit'
                 elif r == 6:
-                    tag = 'NUM_DWL_FORSE'
+                    tag = 'Количество беспроводных датчиков усилия'
                     start_reg = 8199
+                    type_ui = 'LineEdit'
                 elif r == 7:
-                    tag = 'ADR_DW_FORSE'
+                    tag = 'Начальный адрес проводных датчиков'
                     start_reg = 8200
+                    type_ui = 'LineEdit'
                 elif r == 8:
-                    tag = 'ADR_DWL_FORSE'
+                    tag = 'Начальный адрес беспроводных датчиков'
                     start_reg = 8201
+                    type_ui = 'LineEdit'
                 elif r == 9:
-                    tag = 'ADR_MS'
+                    tag = 'Адрес контроллера метеостанции'
                     start_reg = 8202
+                    type_ui = 'LineEdit'
                 elif r == 10:
-                    tag = 'PER_DATCH'
+                    tag = 'Период опроса датчиков, сек'
                     start_reg = 8203
+                    type_ui = 'LineEdit'
                 elif r == 11:
-                    tag = 'PER_OBMEN'
+                    tag = 'Период сеанса связи пункта наблюдения, сек'
                     start_reg = 8204
+                    type_ui = 'LineEdit'
 
                 else:
                     comm_write = False
@@ -216,7 +290,7 @@ class AppWindow(QMainWindow):
 
             if comm_write:
                 print('tag - {}, start_reg - {}'.format(tag, start_reg))
-                self.winWriteShow(tag, start_reg)
+                self.winWriteShow(tag, type_ui, start_reg)
             else:
                 pass
 
@@ -229,13 +303,14 @@ class AppWindow(QMainWindow):
             tag = ''
             start_reg = 0
             comm_write = False
+            type_ui = 'LineEdit'
             if c == 1:
                 comm_write = True
-                if r == 2:
-                    tag = 'NUM_DEV'
+                if r == 1:
+                    tag = 'Номер контроллера'
                     start_reg = 1
-                elif r == 3:
-                    tag = 'PER_RSTSYST'
+                elif r == 2:
+                    tag = 'Период программного сброса, мин'
                     start_reg = 4
                 else:
                     comm_write = False
@@ -243,7 +318,7 @@ class AppWindow(QMainWindow):
                 pass
 
             if comm_write:
-                self.winWriteShow(tag, start_reg)
+                self.winWriteShow(tag, type_ui, start_reg)
             else:
                 pass
 
@@ -254,6 +329,7 @@ class AppWindow(QMainWindow):
     def clickedTableConSet(self, r, c):
         try:
             tag = ''
+            type_ui = 'LineEdit'
             start_reg = 0
             type_reg = 'number'
             count_reg = 1
@@ -262,96 +338,115 @@ class AppWindow(QMainWindow):
                 comm_write = True
                 type_reg = 'number'
                 if r == 1:
-                    tag = 'SEL_TYPE_TRANS_A'
+                    tag = 'Тип передачи первого модема'
                     start_reg = 8205
+                    type_ui = 'ComboBox'
                 elif r == 2:
-                    tag = 'SEL_TYPE_TRANS_B'
+                    tag = 'Тип передачи второго модема'
                     start_reg = 8206
+                    type_ui = 'ComboBox'
                 elif r == 3:
-                    tag = 'NUM_MODEM'
+                    tag = 'Количество модемов'
                     start_reg = 8207
+                    type_ui = 'ComboBox'
                 elif r == 4:
-                    tag = 'FORSE_EN'
+                    tag = 'Отслеживание превышения усилия'
                     start_reg = 8208
+                    type_ui = 'ComboBox'
                 elif r == 5:
-                    tag = 'GPRS_PER_NORM'
+                    tag = 'Период передачи через GPRS\nри нормальных условиях, мин'
                     start_reg = 8209
+                    type_ui = 'LineEdit'
                 elif r == 6:
-                    tag = 'ADR_IP_MODEM_A'
+                    tag = 'Статический IP адрес первого модема'
                     start_reg = 8224
                     type_reg = 'symbol'
                     count_reg = 8
+                    type_ui = 'LineEdit'
                 elif r == 7:
-                    tag = 'ADR_IP_MODEM_B'
+                    tag = 'Статический IP адрес второго модема'
                     start_reg = 8232
                     type_reg = 'symbol'
                     count_reg = 8
+                    type_ui = 'LineEdit'
                 elif r == 8:
-                    tag = 'ADR_IP_PSD'
+                    tag = 'Статический IP адрес ПСД'
                     start_reg = 8240
                     type_reg = 'symbol'
                     count_reg = 8
+                    type_ui = 'LineEdit'
                 elif r == 9:
-                    tag = 'NUM_PORT_MODEM_A'
+                    tag = 'Номер порта первого модема'
                     start_reg = 8248
                     type_reg = 'symbol'
                     count_reg = 4
+                    type_ui = 'LineEdit'
                 elif r == 10:
-                    tag = 'NUM_PORT_MODEM_B'
+                    tag = 'Номер порта второго модема'
                     start_reg = 8252
                     type_reg = 'symbol'
                     count_reg = 4
+                    type_ui = 'LineEdit'
                 elif r == 11:
-                    tag = 'NUM_PORT_PSD'
+                    tag = 'Номер порта для GPRS связи'
                     start_reg = 8256
                     type_reg = 'symbol'
                     count_reg = 4
+                    type_ui = 'LineEdit'
                 elif r == 12:
-                    tag = 'NUM_TEL_A'
+                    tag = 'Основной номер телефона ПСД'
                     start_reg = 8260
                     type_reg = 'symbol'
                     count_reg = 6
+                    type_ui = 'LineEdit'
                 elif r == 13:
-                    tag = 'NUM_TEL_B'
+                    tag = 'Резервный номер телефона ПСД'
                     start_reg = 8266
                     type_reg = 'symbol'
                     count_reg = 6
+                    type_ui = 'LineEdit'
                 elif r == 14:
-                    tag = 'LOGIN_MODEM_A'
+                    tag = 'Логин первого модема'
                     start_reg = 8272
                     type_reg = 'symbol'
                     count_reg = 16
+                    type_ui = 'LineEdit'
                 elif r == 15:
-                    tag = 'LOGIN_MODEM_B'
+                    tag = 'Логин второго модема'
                     start_reg = 8288
                     type_reg = 'symbol'
                     count_reg = 16
+                    type_ui = 'LineEdit'
                 elif r == 16:
-                    tag = 'PAROLE_MODEM_A'
+                    tag = 'Пароль первого модема'
                     start_reg = 8304
                     type_reg = 'symbol'
                     count_reg = 16
+                    type_ui = 'LineEdit'
                 elif r == 17:
-                    tag = 'PAROLE_MODEM_B'
+                    tag = 'Пароль второго модема'
                     start_reg = 8320
                     type_reg = 'symbol'
                     count_reg = 16
+                    type_ui = 'LineEdit'
                 elif r == 18:
-                    tag = 'APN_MODEM_A'
+                    tag = 'APN первого модема'
                     start_reg = 8336
                     type_reg = 'symbol'
                     count_reg = 16
+                    type_ui = 'LineEdit'
                 elif r == 19:
-                    tag = 'APN_MODEM_B'
+                    tag = 'APN второго модема'
                     start_reg = 8352
                     type_reg = 'symbol'
                     count_reg = 16
+                    type_ui = 'LineEdit'
 
                 else:
                     comm_write = False
 
             if comm_write:
-                self.winWriteShow(tag, start_reg, type_reg, count_reg)
+                self.winWriteShow(tag, type_ui, start_reg, type_reg, count_reg)
             else:
                 pass
 
@@ -362,6 +457,7 @@ class AppWindow(QMainWindow):
     def clickedTableThreshold(self, r, c):
         try:
             tag = ''
+            type_ui = 'LineEdit'
             start_reg = ''
             comm_write = False
             if c == 1:
@@ -371,14 +467,14 @@ class AppWindow(QMainWindow):
                 adr_dwl = int(self.model.contr_setbasic.adr_dwl_forse)
                 num_dwl = int(self.model.contr_setbasic.num_dwl_forse)
 
-                if 0 < r <= num_dw + num_dwl:
-                    if r <= num_dw:
-                        tag = 'F_{}_W_Max'.format(adr_dw + r - 1)
-                        start_reg = 8384 + r - 1
+                if 1 < r <= num_dw + num_dwl + 2:
+                    if r <= num_dw + 1:
+                        tag = 'Порог проводного датчика №{}, кг'.format(adr_dw + r - 2)
+                        start_reg = 8384 + r - 2
 
-                    if r > num_dw:
-                        tag = 'F_{}_WL_Max'.format(adr_dwl + r - num_dw - 1)
-                        start_reg = 8394 + r - num_dw - 1
+                    if r > num_dw + 2:
+                        tag = 'Порог беспроводного датчика №{}, кг'.format(adr_dwl + r - num_dw - 3)
+                        start_reg = 8394 + r - num_dw - 3
 
                 else:
                     comm_write = False
@@ -386,7 +482,7 @@ class AppWindow(QMainWindow):
                 pass
 
             if comm_write:
-                self.winWriteShow(tag, start_reg)
+                self.winWriteShow(tag, type_ui, start_reg)
             else:
                 pass
 
