@@ -6,7 +6,6 @@ class TableView:
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(12)
-            table_obj.setHorizontalHeaderLabels(['Наименование', 'Значение'])
             table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
             table_obj.setItem(1, 0, QTableWidgetItem('Тип датчика\nвлажности'))
             table_obj.setItem(2, 0, QTableWidgetItem('Тип датчика\nветра'))
@@ -41,8 +40,6 @@ class TableView:
         try:
             table_obj.setColumnCount(5)
             table_obj.setRowCount(42)
-            table_obj.setHorizontalHeaderLabels(['Наименование', 'Значение,\nВес, кг', 'Темература\nдатчика, ℃',
-                                                 'Температура\nпровода, ℃', 'Напряжение, В'])
             table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
             table_obj.setItem(1, 0, QTableWidgetItem('Номер контроллера'))
             table_obj.setItem(2, 0, QTableWidgetItem('Программный сброс, мин'))
@@ -54,12 +51,18 @@ class TableView:
             table_obj.setItem(8, 0, QTableWidgetItem('Значение внешнего\nтермометра DS18S20, ℃'))
             table_obj.setItem(9, 0, QTableWidgetItem('Концевик шкафа'))
             table_obj.setItem(10, 0, QTableWidgetItem('Проводные датчики'))
+            table_obj.setItem(10, 1, QTableWidgetItem('Усилие, кг'))
+            table_obj.setItem(10, 2, QTableWidgetItem('Температура датчика, ℃'))
             num_row = 11
             for i in range(num_dw):
                 table_obj.setItem(num_row, 0, QTableWidgetItem('Датчик №{}'.format(adr_dw + i)))
                 num_row += 1
 
             table_obj.setItem(num_row, 0, QTableWidgetItem('Беспроводные датчики'))
+            table_obj.setItem(num_row, 1, QTableWidgetItem('Усилие, кг'))
+            table_obj.setItem(num_row, 2, QTableWidgetItem('Температура датчика, ℃'))
+            table_obj.setItem(num_row, 3, QTableWidgetItem('Температура провода, ℃'))
+            table_obj.setItem(num_row, 4, QTableWidgetItem('Напряжение питания, В'))
             for i in range(num_dwl):
                 table_obj.setItem(num_row + 1, 0, QTableWidgetItem('Датчик №{}'.format(adr_dwl + i)))
                 num_row += 1
@@ -96,7 +99,6 @@ class TableView:
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(20)
-            table_obj.setHorizontalHeaderLabels(['Наименование', 'Значение'])
             table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
             table_obj.setItem(1, 0, QTableWidgetItem('Тип передачи\nпервого модема'))
             table_obj.setItem(2, 0, QTableWidgetItem('Тип передачи\nвторого модема'))
@@ -147,16 +149,15 @@ class TableView:
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(33)
-            table_obj.setHorizontalHeaderLabels(['Датчик', 'Пороговый вес, кг'])
             table_obj.setItem(0, 0, QTableWidgetItem('Время посылки'))
             table_obj.setItem(1, 0, QTableWidgetItem('Проводные датчики'))
             num_row = 2
             for i in range(num_dw):
-                table_obj.setItem(num_row, 0, QTableWidgetItem('Датчик №{}'.format(adr_dw + i)))
+                table_obj.setItem(num_row, 0, QTableWidgetItem('Датчик №{}, кг'.format(adr_dw + i)))
                 num_row += 1
             table_obj.setItem(num_row, 0, QTableWidgetItem('Беспроводные датчики'))
             for i in range(num_dwl):
-                table_obj.setItem(num_row + 1, 0, QTableWidgetItem('Датчик №{}'.format(adr_dwl + i)))
+                table_obj.setItem(num_row + 1, 0, QTableWidgetItem('Датчик №{}, кг'.format(adr_dwl + i)))
                 num_row += 1
 
             table_obj.setItem(0, 1, QTableWidgetItem(data.time_msg))

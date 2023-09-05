@@ -1,5 +1,5 @@
+import time
 from tableui import TableView
-from struct import pack, unpack
 from mainui import Ui_MainWindow, WinWrite
 from PyQt5.QtWidgets import QMainWindow
 
@@ -10,11 +10,12 @@ class AppWindow(QMainWindow):
         self.model = model
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.statusbar = self.statusBar()
         self.win_write = WinWrite()
         self.table = TableView()
-        self.com_port()
         self.buttons()
         self.initCheckBox()
+        self.initTypeConCB()
         self.initTableClicked()
 
         self.type_ui = 'LineEdit'
@@ -22,45 +23,31 @@ class AppWindow(QMainWindow):
         self.type_reg = 'number'
         self.count_reg = 1
         self.write_value = ''
-        self.read_dict = {'basic_set': False, 'data': False, 'threshold': False, 'con_set': False}
 
         self.model.signal.finish_read.connect(self.initTable)
+        self.model.signal.show_stb.connect(self.showStatusBar)
 
     def closeEvent(self, event):
-        self.model.exitRead()
-        self.model.closeContr()
+        if self.model.flag_read:
+            self.model.exitRead()
+        if self.model.client.flag_connect:
+            self.model.closeContr()
         self.close()
+        self.sys.exit(0)
 
-    def com_port(self):
-        try:
-            for i in range(len(self.model.available_ports)):
-                self.ui.com_port_cb.addItem(self.model.available_ports[i])
-
-            self.model.com_port = self.ui.com_port_cb.currentText()
-            self.ui.com_port_cb.activated[str].connect(self.select_port)
-
-        except Exception as e:
-            print(str(e))
-
-    def select_port(self, port):
-        try:
-            self.model.com_port = port
-
-        except Exception as e:
-            print(str(e))
+    def showStatusBar(self, data):
+        self.ui.statusBar.showMessage(data)
 
     def buttons(self):
         try:
-            self.ui.connect_btn.clicked.connect(self.model.connectContr)
-            self.ui.read_btn.clicked.connect(self.readDataContr)
-            self.ui.stop_btn.clicked.connect(self.model.stopRead)
-
+            self.ui.connect_btn.clicked.connect(self.initConnectBtn)
             self.win_write.value_LE.returnPressed.connect(self.initWriteVal)
             self.win_write.write_value_btn.clicked.connect(self.initWriteVal)
             self.win_write.cancel_value_btn.clicked.connect(self.winWriteClose)
 
         except Exception as e:
-            print(str(e))
+            txt = 'ERROR in view/buttons - {}'.format(e)
+            self.showStatusBar(txt)
 
     def initCheckBox(self):
         try:
@@ -74,19 +61,131 @@ class AppWindow(QMainWindow):
             self.ui.con_set_chb.stateChanged.connect(lambda: self.initReadDict(self.ui.con_set_chb, 'con_set'))
 
         except Exception as e:
-            print('ERROR in init combobox')
-            print(str(e))
+            txt = 'ERROR in view/initCheckBox - {}'.format(e)
+            self.showStatusBar(txt)
 
     def initReadDict(self, chb, tag):
         try:
             if chb.isChecked():
-                self.read_dict[tag] = True
+                self.model.read_dict[tag] = True
             else:
-                self.read_dict[tag] = False
+                self.model.read_dict[tag] = False
 
         except Exception as e:
-            print('ERROR init dict read')
-            print(str(e))
+            txt = 'ERROR in view/initReadDict - {}'.format(e)
+            self.showStatusBar(txt)
+
+    def initTypeConCB(self):
+        try:
+            self.ui.type_con_cb.addItems(['COM', 'TCP'])
+            self.model.type_con = self.ui.type_con_cb.currentText()
+            self.ui.type_con_cb.activated[str].connect(self.selectTypeCon)
+            self.typeConnect()
+
+        except Exception as e:
+            txt = 'ERROR in view/initTypeConCB - {}'.format(e)
+            self.showStatusBar(txt)
+
+    def selectTypeCon(self, type_con):
+        try:
+            self.model.type_con = type_con
+            self.typeConnect()
+
+        except Exception as e:
+            txt = 'ERROR in view/selectTypeCon - {}'.format(e)
+            self.showStatusBar(txt)
+
+    def typeConnect(self):
+        try:
+            if self.model.type_con == 'COM':
+                self.ui.ip_port_lbl.setVisible(False)
+                self.ui.port_le.setVisible(False)
+                self.ui.com_port_cb.setVisible(True)
+                self.com_port()
+
+            elif self.model.type_con == 'TCP':
+                self.ui.ip_port_lbl.setVisible(True)
+                self.ui.port_le.setVisible(True)
+                self.ui.com_port_cb.setVisible(False)
+
+        except Exception as e:
+            txt = 'ERROR in view/typeConnect - {}'.format(e)
+            self.showStatusBar(txt)
+
+    def com_port(self):
+        try:
+            self.ui.com_port_cb.clear()
+            self.model.scanComPort()
+            for i in range(len(self.model.available_ports)):
+                self.ui.com_port_cb.addItem(self.model.available_ports[i])
+
+            self.model.port = self.ui.com_port_cb.currentText()
+            self.ui.com_port_cb.activated[str].connect(self.select_port)
+
+        except Exception as e:
+            txt = 'ERROR in view/com_port - {}'.format(e)
+            self.showStatusBar(txt)
+
+    def select_port(self, port):
+        try:
+            self.model.port = port
+
+        except Exception as e:
+            txt = 'ERROR in view/select_port'.format(e)
+            self.showStatusBar(txt)
+
+    def initConnectBtn(self):
+        try:
+            txt_stb = ''
+            temp = self.ui.connect_btn.text()
+            if self.model.type_con == 'COM':
+                if temp == 'Подключиться':
+                    self.model.connectCOM()
+                    time.sleep(0.2)
+                    if self.model.client.flag_connect:
+                        txt_stb = 'Контроллер подключен по СОМ-порту, идёт чтение'
+                        self.readDataContr()
+                        self.ui.connect_btn.setText('Отключиться')
+                        self.ui.type_con_cb.setEnabled(False)
+                    else:
+                        txt = 'Неудачная попытка подключения по СОМ-порту, повтор..'
+                        self.showStatusBar(txt)
+                        self.initConnectBtn()
+
+                elif temp == 'Отключиться':
+                    self.model.stopRead()
+                    if self.model.flag_read == True:
+                        txt_stb = 'Завершается чтение контроллера'
+                        self.showStatusBar(txt_stb)
+                        time.sleep(1)
+                        self.initConnectBtn()
+                    else:
+                        self.model.closeContr()
+                        txt_stb = 'Контроллер отключен, чтение остановлено'
+                        self.ui.connect_btn.setText('Подключиться')
+                        self.ui.type_con_cb.setEnabled(True)
+
+            elif self.model.type_con == 'TCP':
+                if temp == 'Подключиться':
+                    self.model.port = self.ui.port_le.text()
+                    self.model.connectTCP()
+                    txt_stb = 'ПСД подключен к порту, ожидается посылка от контроллера'
+                    self.ui.connect_btn.setText('Отключиться')
+                    self.ui.type_con_cb.setEnabled(False)
+                    self.ui.port_le.setEnabled(False)
+
+                elif temp == 'Отключиться':
+                    self.model.disconnectTCP()
+                    txt_stb = 'ПСД отключен от порта'
+                    self.ui.port_le.setEnabled(True)
+                    self.ui.type_con_cb.setEnabled(True)
+                    self.ui.connect_btn.setText('Подключиться')
+
+            self.showStatusBar(txt_stb)
+
+        except Exception as e:
+            txt = 'ERROR in view/initConnectBtn - {}'.format(e)
+            self.showStatusBar(txt)
 
     def initTable(self, tag):
         try:
@@ -109,8 +208,8 @@ class AppWindow(QMainWindow):
                                               self.model.contr_setThresh)
 
         except Exception as e:
-            print('ERROR in init table')
-            print(str(e))
+            txt = 'ERROR in view/initTable - {}'.format(e)
+            self.showStatusBar(txt)
 
     def initTableClicked(self):
         self.ui.basic_set_table.cellClicked[int, int].connect(self.clickedTableBasic)
@@ -119,7 +218,7 @@ class AppWindow(QMainWindow):
         self.ui.threshold_table.cellClicked[int, int].connect(self.clickedTableThreshold)
 
     def readDataContr(self):
-        self.model.startRead(self.read_dict)
+        self.model.startRead()
 
     def winWriteShow(self, text_lbl, type_ui, start_reg, type_reg='number', count_reg=1):
         try:
@@ -143,7 +242,8 @@ class AppWindow(QMainWindow):
                 self.initComboBox()
 
         except Exception as e:
-            print(str(e))
+            txt = 'ERROR in view/winWriteShow - {}'.format(e)
+            self.showStatusBar(txt)
 
     def initComboBox(self):
         try:
@@ -167,29 +267,29 @@ class AppWindow(QMainWindow):
                 self.win_write.comboBox.addItems(['Один модем', 'Два модема'])
 
             elif self.start_reg == 8208:
-                self.win_write.comboBox.addItems(['Не отслеживается', 'Отслеживается'])
+                self.win_write.comboBox.addItems(['НЕТ', 'ДА'])
 
             self.win_write.comboBox.activated[int].connect(self.selectComboBox)
 
         except Exception as e:
-            print('ERROR in initComboBox')
-            print(str(e))
+            txt = 'ERROR in view/initComboBox - {}'.format(e)
+            self.showStatusBar(txt)
 
     def selectComboBox(self, value):
         try:
             self.write_value = str(value)
 
         except Exception as e:
-            print('ERROR in selectComboBox')
-            print(str(e))
+            txt = 'ERROR in view/selectComboBox - {}'.format(e)
+            self.showStatusBar(txt)
 
     def winWriteClose(self):
         try:
             self.win_write.close()
 
         except Exception as e:
-            print('ERROR in winWriteClose')
-            print(str(e))
+            txt = 'ERROR in view/winWriteClose - {}'.format(e)
+            self.showStatusBar(txt)
 
     def initWriteVal(self):
         try:
@@ -227,8 +327,8 @@ class AppWindow(QMainWindow):
                 pass
 
         except Exception as e:
-            print(str(e))
-            print('ERROR in initWriteVal')
+            txt = 'ERROR in view/initWriteVal - {}'.format(e)
+            self.showStatusBar(txt)
 
     def clickedTableBasic(self, r, c):
         try:
@@ -295,8 +395,8 @@ class AppWindow(QMainWindow):
                 pass
 
         except Exception as e:
-            print('ERROR in clickedTableBasic')
-            print(str(e))
+            txt = 'ERROR in view/clickedTableBasic - {}'.format(e)
+            self.showStatusBar(txt)
 
     def clickedTableData(self, r, c):
         try:
@@ -323,8 +423,8 @@ class AppWindow(QMainWindow):
                 pass
 
         except Exception as e:
-            print('ERROR in clickedTableData')
-            print(str(e))
+            txt = 'ERROR in view/clickedTableData - {}'.format(e)
+            self.showStatusBar(txt)
 
     def clickedTableConSet(self, r, c):
         try:
@@ -451,8 +551,8 @@ class AppWindow(QMainWindow):
                 pass
 
         except Exception as e:
-            print('ERROR in clickedTableConSet')
-            print(str(e))
+            txt = 'ERROR in view/clickedTableConSet - {}'.format(e)
+            self.showStatusBar(txt)
 
     def clickedTableThreshold(self, r, c):
         try:
@@ -487,5 +587,5 @@ class AppWindow(QMainWindow):
                 pass
 
         except Exception as e:
-            print('ERROR in clickedTableThreshold')
-            print(str(e))
+            txt = 'ERROR in view/clickedTableThreshold - {}'.format(e)
+            self.showStatusBar(txt)

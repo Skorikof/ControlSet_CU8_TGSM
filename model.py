@@ -1,15 +1,21 @@
-from client import Client
+import time
+
+import serial
+from pymodbus.client.sync import ModbusSerialClient, ModbusTcpClient
 from datetime import datetime
 from struct import pack, unpack
 from PyQt5.QtCore import QObject, QThreadPool, pyqtSignal
-from threads import Reader, Writer
+from threads import Reader, Writer, ConnectTCP
 
 
 class WinSignals(QObject):
+    connect_tcp = pyqtSignal(int)
+    disconnect_tcp = pyqtSignal()
     startRead = pyqtSignal(object, dict)
     stopRead = pyqtSignal()
     exitRead = pyqtSignal()
     finish_read = pyqtSignal(str)
+    show_stb = pyqtSignal(str)
 
 
 class DataContr:
@@ -82,6 +88,53 @@ class SetThresholdContr:
         self.f_wl_max = []
 
 
+class Client:
+    def __init__(self):
+        self.client = None
+        self.flag_connect = False
+
+    def port_scan(self):
+        try:
+            result = []
+            ports = ['COM{}'.format(i + i) for i in range(256)]
+            for port in ports:
+                try:
+                    s = serial.Serial(port)
+                    s.close()
+                    result.append(port)
+
+                except:
+                    pass
+
+            return result
+
+        except Exception as e:
+            print('ERROR in scan port')
+            print(str(e))
+
+    def connectClient(self, type_con, port, host='localhost'):
+        try:
+            if type_con == 'COM':
+                self.client = ModbusSerialClient(method='ascii', port=port, parity='N', baudrate=9600,
+                                           databits=8, stopbits=1, strict=False, retries=4, timeout=1,
+                                           retry_on_empty=True)
+
+            elif type_con == 'TCP':
+                self.client = ModbusTcpClient(host=host, port=port, strict=False, retries=4, retry_on_empty=True,
+                                              timeout=1)
+
+            self.flag_connect = self.client.connect()
+
+        except Exception as e:
+            print('ERROR in connect client')
+            print(str(e))
+
+    def closeClient(self):
+        self.client.close()
+        self.flag_connect = False
+        print('Connect is stopped')
+
+
 class Model:
     def __init__(self):
         self.signal = WinSignals()
@@ -92,51 +145,125 @@ class Model:
         self.contr_setThresh = SetThresholdContr()
         self.threadpool = QThreadPool()
 
-        self.com_port = ''
-        self.available_ports = Client.port_scan(Client())
+        self.available_ports = []
+        self.type_con = ''
+        self.host = ''
+        self.port = ''
+        self.initConnectTCP()
         self.initReader()
         self.flag_read = False
         self.flag_write = False
+        self.read_dict = {'basic_set': False, 'data': False, 'threshold': False, 'con_set': False}
 
-    def connectContr(self):
+    def scanComPort(self):
         try:
-            self.client.connectClient(self.com_port)
+            self.available_ports = self.client.port_scan()
 
         except Exception as e:
-            print(str(e))
+            txt = 'ERROR in model/scanComPort - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def initConnectTCP(self):
+        try:
+            self.conTCP = ConnectTCP()
+            self.conTCP.signal.connect_result.connect(self.resultConTCP)
+            self.conTCP.signal.connect_client.connect(self.clientConTCP)
+            self.conTCP.signal.connect_error.connect(self.errorConTCP)
+            self.conTCP.signal.connect_restart.connect(self.con_restart)
+            self.signal.connect_tcp.connect(self.conTCP.startConnect)
+            self.signal.disconnect_tcp.connect(self.conTCP.exitConnect)
+            self.threadpool.start(self.conTCP)
+
+        except Exception as e:
+            txt = 'ERROR in model/initConnectTCP - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def resultConTCP(self, data):
+        print(data)
+        self.signal.show_stb.emit(data)
+
+    def clientConTCP(self, data):
+        try:
+            self.host = data[0]
+            self.port = data[1]
+            self.client.connectClient('TCP', self.port, self.host)
+            txt = 'TCP соединение установлено'
+            self.signal.show_stb.emit(txt)
+
+            if self.client.flag_connect:
+                self.startRead()
+                txt = 'Чтение контроллера по ТСР'
+                self.signal.show_stb.emit(txt)
+            else:
+                time.sleep(0.2)
+                self.client.connectClient('TCP', self.port, self.host)
+        except Exception as e:
+            txt = 'ERROR in model/clientConTCP - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def errorConTCP(self, data):
+        self.signal.show_stb.emit(data)
+
+    def connectTCP(self):
+        try:
+            self.signal.connect_tcp.emit(int(self.port))
+
+        except Exception as e:
+            txt = 'ERROR in model/connectTCP - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def disconnectTCP(self):
+        self.signal.disconnect_tcp.emit()
+
+    def con_restart(self):
+        self.disconnectTCP()
+        self.connectTCP()
+
+    def connectCOM(self):
+        try:
+            self.client.connectClient(self.type_con, self.port, self.host)
+
+        except Exception as e:
+            txt = 'ERROR in model/connectCOM - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def closeContr(self):
         try:
             if self.client.flag_connect:
+                self.client.flag_connect = False
                 self.client.closeClient()
+
             else:
                 pass
 
         except Exception as e:
-            print(str(e))
+            txt = 'ERROR in model/closeContr - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def initReader(self):
         self.reader = Reader()
         self.reader.signal.read_result.connect(self.readResult)
+        self.reader.signal.read_flag.connect(self.readFlag)
         self.reader.signal.read_error.connect(self.readError)
         self.signal.startRead.connect(self.reader.startRead)
         self.signal.stopRead.connect(self.reader.stopRead)
         self.signal.exitRead.connect(self.reader.exitRead)
         self.threadpool.start(self.reader)
 
-    def startRead(self, read_dict):
-        self.signal.startRead.emit(self.client.client, read_dict)
-        self.flag_read = True
+    def startRead(self):
+        self.signal.startRead.emit(self.client.client, self.read_dict)
 
     def stopRead(self):
         self.signal.stopRead.emit()
-        self.flag_read = False
 
     def exitRead(self):
         self.signal.exitRead.emit()
 
+    def readFlag(self, data):
+        self.flag_read = data
+
     def readError(self, txt):
-        print(txt)
+        self.signal.show_stb.emit(txt)
 
     def readResult(self, tag, data):
         temp = 0
@@ -154,8 +281,8 @@ class Model:
                 self.parsThreshold(data)
 
         except Exception as e:
-            print('ERROR in read result in {}'.format(temp))
-            print(str(e))
+            txt = 'ERROR in model/readResult in {} - {}'.format(temp, e)
+            self.signal.show_stb.emit(txt)
 
     def parsBasicSet(self, data):
         try:
@@ -177,8 +304,8 @@ class Model:
             self.signal.finish_read.emit('basic_set')
 
         except Exception as e:
-            print('ERROR in parsBasicSet')
-            print(str(e))
+            txt = 'ERROR in model/parsBasicSet - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def createTableBasic(self, tag, data):
         try:
@@ -222,8 +349,8 @@ class Model:
             return value
 
         except Exception as e:
-            print('ERROR in createTable')
-            print(str(e))
+            txt = 'ERROR in model/createTable - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def parsData(self, data):
         try:
@@ -261,8 +388,8 @@ class Model:
             self.signal.finish_read.emit('data')
 
         except Exception as e:
-            print('ERROR in parsData')
-            print(str(e))
+            txt = 'ERROR in model/parsData - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def createDataTable(self, tag, data):
         try:
@@ -278,8 +405,8 @@ class Model:
             return value
 
         except Exception as e:
-            print('ERROR in createDataTable')
-            print(str(e))
+            txt = 'ERROR in model/createDataTable - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def parsConSet(self, data):
         try:
@@ -308,8 +435,8 @@ class Model:
             self.signal.finish_read.emit('con_set')
 
         except Exception as e:
-            print('ERROR in parsConSet')
-            print(str(e))
+            txt = 'ERROR in model/parsConSet - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def createConSetTable(self, tag, data):
         try:
@@ -334,17 +461,17 @@ class Model:
 
             if tag == 'forse_en':
                 if data == '0':
-                    value = 'Не произвоится'
+                    value = 'НЕТ'
                 elif data == '1':
-                    value = 'Производится'
+                    value = 'ДА'
                 else:
                     value = ''
 
             return value
 
         except Exception as e:
-            print('ERROR in createConSetTable')
-            print(str(e))
+            txt = 'ERROR in model/createConSetTable - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def parsThreshold(self, data):
         try:
@@ -360,8 +487,8 @@ class Model:
             self.signal.finish_read.emit('threshold')
 
         except Exception as e:
-            print('ERROR in parsThreshold')
-            print(str(e))
+            txt = 'ERROR in model/parsThreshold - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def dopCodeBintoDec(self, value, bits=16):
         try:
@@ -373,8 +500,8 @@ class Model:
             return val_temp
 
         except Exception as e:
-            print('ERROR in dopCodeBintoDec')
-            print(str(e))
+            txt = 'ERROR in model/dopCodeBintoDec - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def msgBintoFloat(self, first_val, second_val):
         try:
@@ -382,8 +509,8 @@ class Model:
             return round(unpack('f', pack('<HH', int(second_val, 2), int(first_val, 2)))[0], 2)
 
         except Exception as e:
-            print('ERROR in msgBintoFloat')
-            print(str(e))
+            txt = 'ERROR in model/msgBintoFloat - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def msgBintoSymbol(self, value_list):
         try:
@@ -402,8 +529,8 @@ class Model:
             return msg
 
         except Exception as e:
-            print('ERROR in msgBintoSymbol')
-            print(str(e))
+            txt = 'ERROR in model/msgBintoSymbol - {}'.format(e)
+            self.signal.show_stb.emit(txt)
 
     def initWriter(self, start_adr, values):
         self.writeVal = Writer(self.client.client, start_adr, values)
@@ -412,7 +539,7 @@ class Model:
         self.threadpool.start(self.writeVal)
 
     def writeError(self, txt):
-        print(txt)
+        self.signal.show_stb.emit(txt)
 
     def writeFinish(self):
         print('Write OK')
@@ -424,5 +551,5 @@ class Model:
             self.value = value
 
         except Exception as e:
-            print(str(e))
-            print('ERROR in startValue')
+            txt = 'ERROR in model/writeValue - {}'.format(e)
+            self.signal.show_stb.emit(txt)

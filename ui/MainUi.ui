@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1240</width>
-    <height>850</height>
+    <width>1256</width>
+    <height>884</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,6 +67,53 @@
         <number>10</number>
        </property>
        <item>
+        <widget class="QLabel" name="label">
+         <property name="minimumSize">
+          <size>
+           <width>160</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>160</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Тип подключения</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="type_con_cb">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QComboBox" name="com_port_cb">
          <property name="minimumSize">
           <size>
@@ -85,6 +132,62 @@
            <family>Arial</family>
            <pointsize>14</pointsize>
           </font>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="ip_port_lbl">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Порт</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="port_le">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -113,56 +216,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="read_btn">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>100</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Arial</family>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Читать</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="stop_btn">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>100</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Arial</family>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Остановить</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
@@ -174,412 +227,428 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QTableWidget" name="threshold_table">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>480</y>
-         <width>272</width>
-         <height>300</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>272</width>
-         <height>300</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>272</width>
-         <height>300</height>
-        </size>
-       </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="rowCount">
-        <number>31</number>
-       </property>
-       <property name="columnCount">
-        <number>2</number>
-       </property>
-       <attribute name="horizontalHeaderMinimumSectionSize">
-        <number>39</number>
-       </attribute>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>115</number>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>40</number>
-       </attribute>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <column/>
-       <column/>
-       <item row="1" column="1">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-      <widget class="QCheckBox" name="data_chb">
-       <property name="geometry">
-        <rect>
-         <x>330</x>
-         <y>5</y>
-         <width>200</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Данные</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="basic_set_chb">
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>5</y>
-         <width>200</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Базовые настройки</string>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="con_set_chb">
-       <property name="geometry">
-        <rect>
-         <x>850</x>
-         <y>5</y>
-         <width>200</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Сетевые настройки</string>
-       </property>
-      </widget>
-      <widget class="QTableWidget" name="basic_set_table">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>40</y>
-         <width>272</width>
-         <height>385</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>272</width>
-         <height>385</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>272</width>
-         <height>385</height>
-        </size>
-       </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="tabKeyNavigation">
-        <bool>true</bool>
-       </property>
-       <property name="showDropIndicator" stdset="0">
-        <bool>true</bool>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-       <property name="cornerButtonEnabled">
-        <bool>true</bool>
-       </property>
-       <property name="rowCount">
-        <number>12</number>
-       </property>
-       <property name="columnCount">
-        <number>2</number>
-       </property>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>122</number>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>40</number>
-       </attribute>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <column/>
-       <column/>
-       <item row="0" column="0">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-       </item>
-       <item row="8" column="1">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-      <widget class="QTableWidget" name="con_set_table">
-       <property name="geometry">
-        <rect>
-         <x>820</x>
-         <y>40</y>
-         <width>410</width>
-         <height>740</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>410</width>
-         <height>740</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>410</width>
-         <height>740</height>
-        </size>
-       </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="rowCount">
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
         <number>20</number>
        </property>
-       <property name="columnCount">
-        <number>2</number>
-       </property>
-       <attribute name="horizontalHeaderMinimumSectionSize">
-        <number>50</number>
-       </attribute>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>192</number>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>40</number>
-       </attribute>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <column/>
-       <column/>
-      </widget>
-      <widget class="QCheckBox" name="threshold_chb">
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>440</y>
-         <width>200</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Пороги</string>
-       </property>
-      </widget>
-      <widget class="QTableWidget" name="data_table">
-       <property name="geometry">
-        <rect>
-         <x>310</x>
-         <y>40</y>
-         <width>492</width>
-         <height>740</height>
-        </rect>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>492</width>
-         <height>740</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>492</width>
-         <height>740</height>
-        </size>
-       </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="rowCount">
-        <number>42</number>
-       </property>
-       <property name="columnCount">
+       <property name="topMargin">
         <number>5</number>
        </property>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>90</number>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>40</number>
-       </attribute>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <column/>
-       <column/>
-       <column/>
-       <column/>
-       <column/>
-      </widget>
+       <property name="rightMargin">
+        <number>20</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>20</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>10</number>
+       </property>
+       <item row="1" column="1" rowspan="3">
+        <widget class="QTableWidget" name="data_table">
+         <property name="minimumSize">
+          <size>
+           <width>492</width>
+           <height>740</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="rowCount">
+          <number>42</number>
+         </property>
+         <property name="columnCount">
+          <number>5</number>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>94</number>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderDefaultSectionSize">
+          <number>40</number>
+         </attribute>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <column/>
+         <column/>
+         <column/>
+         <column/>
+         <column/>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="basic_set_chb">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Базовые настройки</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="3">
+        <widget class="QTableWidget" name="con_set_table">
+         <property name="minimumSize">
+          <size>
+           <width>410</width>
+           <height>740</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="rowCount">
+          <number>20</number>
+         </property>
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>50</number>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>195</number>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderDefaultSectionSize">
+          <number>40</number>
+         </attribute>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <column/>
+         <column/>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="data_chb">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Данные</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QCheckBox" name="con_set_chb">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Сетевые настройки</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QTableWidget" name="basic_set_table">
+         <property name="minimumSize">
+          <size>
+           <width>272</width>
+           <height>385</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="tabKeyNavigation">
+          <bool>true</bool>
+         </property>
+         <property name="showDropIndicator" stdset="0">
+          <bool>true</bool>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="cornerButtonEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="rowCount">
+          <number>12</number>
+         </property>
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>126</number>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderDefaultSectionSize">
+          <number>40</number>
+         </attribute>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <column/>
+         <column/>
+         <item row="0" column="0">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="font">
+           <font>
+            <family>MS Shell Dlg 2</family>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+         </item>
+         <item row="8" column="1">
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="threshold_chb">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Пороги</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QTableWidget" name="threshold_table">
+         <property name="minimumSize">
+          <size>
+           <width>272</width>
+           <height>300</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="rowCount">
+          <number>31</number>
+         </property>
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>39</number>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>126</number>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderDefaultSectionSize">
+          <number>40</number>
+         </attribute>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <column/>
+         <column/>
+         <item row="1" column="1">
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
   </widget>
  </widget>
  <resources/>
