@@ -4,15 +4,12 @@ from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 
 
 class Signals(QObject):
-    connect_result = pyqtSignal(str)
-    connect_error = pyqtSignal(str)
+    thread_log = pyqtSignal(str)
     connect_client = pyqtSignal(tuple)
     connect_restart = pyqtSignal()
     read_result = pyqtSignal(str, list)
     read_flag = pyqtSignal(bool)
-    read_error = pyqtSignal(str)
     write_finish = pyqtSignal()
-    write_error = pyqtSignal(str)
 
 
 class ConnectTCP(QRunnable):
@@ -22,6 +19,8 @@ class ConnectTCP(QRunnable):
         super(ConnectTCP, self).__init__()
         self.cycle = True
         self.flag_connect = False
+        self.port = None
+        self.sock = None
 
     @pyqtSlot()
     def run(self):
@@ -33,36 +32,39 @@ class ConnectTCP(QRunnable):
                 try:
                     conn, addr = self.sock.accept()
                     txt = 'New connection from - {}'.format(addr)
-                    self.signal.connect_result.emit(txt)
+                    self.signal.thread_log.emit(txt)
                     data = conn.recv(1024)
                     txt = 'MSG - {}'.format(data.decode())
-                    self.signal.connect_result.emit(txt)
+                    self.signal.thread_log.emit(txt)
                     if data.decode() == 'CONNECT OK':
-                        # self.signal.connect_client.emit(addr)
-                        while True:
-                            msg = '3A30313033303030303030303146420D0A'
-                            conn.send(bytearray.fromhex(msg))
-                            data = conn.recv(1024)
-                            txt = 'MSG - {}'.format(data.decode())
-                            self.signal.connect_result.emit(txt)
-                            time.sleep(10)
+                        self.signal.connect_client.emit(addr)
+                        # while True:
+                        #     msg = '3A30313033303030303030303146420D0A'
+                        #     conn.send(bytearray.fromhex(msg))
+                        #     data = conn.recv(1024)
+                        #     txt = 'MSG - {}'.format(data.decode())
+                        #     self.signal.connect_log.emit(txt)
+                        #     time.sleep(10)
 
                         # self.signal.connect_restart.emit()
+                    else:
+                        txt = 'Что-то пошло не так с соединением'
+                        self.signal.thread_log.emit(txt)
+                        pass
 
                 except Exception as e:
                     txt = 'ERROR in thread connect GPRS - {}'.format(e)
-                    self.signal.read_error.emit(txt)
+                    self.signal.thread_log.emit(txt)
 
     def startConnect(self, port):
         try:
-            self.count_msg = 0
             self.port = port
             self.flag_connect = False
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.bind(('', self.port))
             self.sock.listen(1)
             txt = 'Port {} is connect'.format(self.port)
-            self.signal.connect_result.emit(txt)
+            self.signal.thread_log.emit(txt)
             self.cycle = True
             self.flag_connect = True
 
@@ -70,7 +72,7 @@ class ConnectTCP(QRunnable):
             txt = 'ERROR in thread start connect GPRS - {}'.format(e)
             self.flag_connect = False
             self.sock.close()
-            self.signal.connect_error.emit(txt)
+            self.signal.thread_log.emit(txt)
 
     def exitConnect(self):
         self.sock.close()
@@ -85,6 +87,8 @@ class Reader(QRunnable):
         self.cycle = True
         self.is_run = False
         self.flag_read = False
+        self.client = None
+        self.read_dict = {}
 
     @pyqtSlot()
     def run(self):
@@ -94,14 +98,14 @@ class Reader(QRunnable):
                     time.sleep(0.01)
                 else:
                     temp = self.read_regs(0, 1)
-                    if self.read_dict['basic_set'] == True:
+                    if self.read_dict['basic_set']:
                         self.flag_read = True
                         basic_list = list(self.read_regs(8192, 13))
 
                         self.signal.read_result.emit('basic_set', basic_list)
                         self.flag_read = False
 
-                    if self.read_dict['data'] == True:
+                    if self.read_dict['data']:
                         self.flag_read = True
                         data_list = []
                         data_list.append(self.read_regs(0, 5))
@@ -113,7 +117,7 @@ class Reader(QRunnable):
                         self.signal.read_result.emit('data', data_list)
                         self.flag_read = False
 
-                    if self.read_dict['con_set'] == True:
+                    if self.read_dict['con_set']:
                         self.flag_read = True
                         connect_list = []
                         connect_list.append(self.read_regs(8205, 5))
@@ -135,7 +139,7 @@ class Reader(QRunnable):
                         self.signal.read_result.emit('con_set', connect_list)
                         self.flag_read = False
 
-                    if self.read_dict['threshold'] == True:
+                    if self.read_dict['threshold']:
                         self.flag_read = True
                         threshold_list = []
                         threshold_list.append(self.read_regs(8384, 10))
@@ -145,16 +149,16 @@ class Reader(QRunnable):
                         self.flag_read = False
 
                     self.signal.read_flag.emit(self.flag_read)
-                    time.sleep(5)
+                    time.sleep(2)
 
             except Exception as e:
                 txt = 'ERROR in thread Reader - {}'.format(e)
-                self.signal.read_error.emit(txt)
+                self.signal.thread_log.emit(txt)
 
     def read_regs(self, adr_reg, num_reg):
         try:
             print('Read {} register'.format(hex(adr_reg)))
-            rr = self.client.read_holding_registers(adr_reg, num_reg, unit=1)
+            rr = self.client.read_holding_registers(adr_reg, num_reg, slave=1)
             if not rr.isError():
                 print('Register {} read comlite!'.format(hex(adr_reg)))
                 temp_list = []
@@ -165,11 +169,11 @@ class Reader(QRunnable):
 
             else:
                 txt = 'ERROR read {} register'.format(hex(adr_reg))
-                self.signal.read_error.emit(txt)
+                self.signal.thread_log.emit(txt)
 
         except Exception as e:
             txt = 'ERROR in thread read regs - {}'.format(e)
-            self.signal.read_error.emit(txt)
+            self.signal.thread_log.emit(txt)
 
     def startRead(self, client, read_dict):
         self.client = client
@@ -197,36 +201,34 @@ class Writer(QRunnable):
         self.start_adr = start_adr
         self.number_attempts = 0
         self.max_attempts = 5
+        self.flag_write = False
 
     @pyqtSlot()
     def run(self):
         try:
             while self.number_attempts <= self.max_attempts:
                 txt = 'Writer, start_adr - {}, value - {}'.format(self.start_adr, self.values)
-                self.signal.write_error.emit(txt)
-                rq = self.client.write_registers(self.start_adr, self.values, unit=1)
+                self.signal.thread_log.emit(txt)
+                rq = self.client.write_registers(self.start_adr, self.values, slave=1)
                 time.sleep(0.1)
                 if not rq.isError():
                     txt = 'Complite write value {} in reg - {}'.format(self.values, self.start_adr)
-                    self.signal.write_error.emit(txt)
+                    self.signal.thread_log.emit(txt)
                     self.flag_write = True
                     self.number_attempts = self.max_attempts + 1
-                    if not self.flag_ok:
-                        self.signal.write_finish.emit()
-                        self.flag_ok = True
 
                 else:
                     txt = 'Attempts write: {}, value {} in reg - {}'.format(self.number_attempts, self.values,
-                                                                             self.start_adr)
-                    self.signal.write_error.emit(txt)
+                                                                            self.start_adr)
+                    self.signal.thread_log.emit(txt)
                     self.number_attempts += 1
                     time.sleep(0.5)
             if not self.flag_write:
                 txt = 'Unsuccessful write attempt value {} in reg - {}'.format(self.values, self.start_adr)
-                self.signal.write_error.emit(txt)
+                self.signal.thread_log.emit(txt)
                 txt = 'ERROR format - {}'.format(rq)
-                self.signal.write_error.emit(txt)
+                self.signal.thread_log.emit(txt)
 
         except Exception as e:
             txt = 'ERROR in thread Writer - {}'.format(e)
-            self.signal.read_error.emit(txt)
+            self.signal.thread_log.emit(txt)

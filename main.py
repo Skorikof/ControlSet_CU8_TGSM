@@ -9,7 +9,7 @@ def main():
     app = QApplication(sys.argv)
     m = Model()
     win = AppWindow(m)
-    win.setWindowIcon(QIcon('main.png'))
+    win.setWindowIcon(QIcon('ico/main.png'))
     win.show()
     sys.exit(app.exec_())
 

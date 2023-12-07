@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 
 class TableView:
-    def initTableBasic(self, table_obj, data):
+    def init_table_basic(self, table_obj, data):
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(12)
@@ -36,7 +36,7 @@ class TableView:
             print('ERROR in init table basic')
             print(str(e))
 
-    def initTableData(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl, data):
+    def init_table_data(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl, data):
         try:
             table_obj.setColumnCount(5)
             table_obj.setRowCount(42)
@@ -95,7 +95,7 @@ class TableView:
             print('ERROR in init table data')
             print(str(e))
 
-    def initTableConnect(self, table_obj, data):
+    def init_table_connect(self, table_obj, data):
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(20)
@@ -145,7 +145,7 @@ class TableView:
             print('ERROR in init table connect')
             print(str(e))
 
-    def initTableThreshold(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl, data):
+    def init_table_threshold(self, table_obj, num_dw, adr_dw, num_dwl, adr_dwl, data):
         try:
             table_obj.setColumnCount(2)
             table_obj.setRowCount(33)
@@ -172,4 +172,3 @@ class TableView:
         except Exception as e:
             print('ERROR in init table threshold')
             print(str(e))
-

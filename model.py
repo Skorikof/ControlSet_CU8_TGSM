@@ -1,10 +1,9 @@
 import time
-
-import serial
-from pymodbus.client.sync import ModbusSerialClient, ModbusTcpClient
 from datetime import datetime
 from struct import pack, unpack
 from PyQt5.QtCore import QObject, QThreadPool, pyqtSignal
+from client import Client
+from settings import Settings, DataContr, SetBasicContr, SetConnectContr, SetThresholdContr
 from threads import Reader, Writer, ConnectTCP
 
 
@@ -18,175 +17,101 @@ class WinSignals(QObject):
     show_stb = pyqtSignal(str)
 
 
-class DataContr:
-    def __init__(self):
-        self.time_msg = ''
-        self.adr_dev = ''
-        self.num_dev = ''
-        self.per_rstsyst = ''
-        self.f_w = []
-        self.t_w = []
-        self.f_wl = []
-        self.t_wl = []
-        self.tp_wl = []
-        self.u_wl = []
-        self.t_vlagn = ''
-        self.vlagn = ''
-        self.napr_vetr = ''
-        self.scor_vetr = ''
-        self.napr_pit = ''
-        self.t_ds18s20 = ''
-        self.status_int = ''
-
-
-class SetBasicContr:
-    def __init__(self):
-        self.time_msg = ''
-        self.rz0 = ''
-        self.rst_kontrol = ''
-        self.sel_d_himid = ''
-        self.sel_d_speed = ''
-        self.sel_dw_forse = ''
-        self.sel_dwl_forse = ''
-        self.num_dw_forse = ''
-        self.num_dwl_forse = ''
-        self.adr_dw_forse = ''
-        self.adr_dwl_forse = ''
-        self.adr_ms = ''
-        self.per_datch = ''
-        self.per_obmen = ''
-
-
-class SetConnectContr:
-    def __init__(self):
-        self.time_msg = ''
-        self.sel_type_trans_a = ''
-        self.sel_type_trans_b = ''
-        self.num_modem = ''
-        self.forse_en = ''
-        self.gprs_per_norm = ''
-        self.adr_ip_modem_a = ''
-        self.adr_ip_modem_b = ''
-        self.adr_ip_psd = ''
-        self.num_port_modem_a = ''
-        self.num_port_modem_b = ''
-        self.num_port_psd = ''
-        self.num_tel_a = ''
-        self.num_tel_b = ''
-        self.login_modem_a = ''
-        self.login_modem_b = ''
-        self.parole_modem_a = ''
-        self.parole_modem_b = ''
-        self.apn_modem_a = ''
-        self.apn_modem_b = ''
-
-
-class SetThresholdContr:
-    def __init__(self):
-        self.time_msg = ''
-        self.f_w_max = []
-        self.f_wl_max = []
-
-
-class Client:
-    def __init__(self):
-        self.client = None
-        self.flag_connect = False
-
-    def port_scan(self):
-        try:
-            result = []
-            ports = ['COM{}'.format(i + i) for i in range(256)]
-            for port in ports:
-                try:
-                    s = serial.Serial(port)
-                    s.close()
-                    result.append(port)
-
-                except:
-                    pass
-
-            return result
-
-        except Exception as e:
-            print('ERROR in scan port')
-            print(str(e))
-
-    def connectClient(self, type_con, port, host='localhost'):
-        try:
-            if type_con == 'COM':
-                self.client = ModbusSerialClient(method='ascii', port=port, parity='N', baudrate=9600,
-                                           databits=8, stopbits=1, strict=False, retries=4, timeout=1,
-                                           retry_on_empty=True)
-
-            elif type_con == 'TCP':
-                self.client = ModbusTcpClient(host=host, port=port, strict=False, retries=4, retry_on_empty=True,
-                                              timeout=1)
-
-            self.flag_connect = self.client.connect()
-
-        except Exception as e:
-            print('ERROR in connect client')
-            print(str(e))
-
-    def closeClient(self):
-        self.client.close()
-        self.flag_connect = False
-        print('Connect is stopped')
-
-
 class Model:
     def __init__(self):
         self.signal = WinSignals()
         self.client = Client()
+        self.prg_set = Settings()
+
         self.contr_data = DataContr()
         self.contr_setbasic = SetBasicContr()
         self.contr_setConnect = SetConnectContr()
         self.contr_setThresh = SetThresholdContr()
         self.threadpool = QThreadPool()
 
-        self.available_ports = []
-        self.type_con = ''
-        self.host = ''
-        self.port = ''
-        self.initConnectTCP()
         self.initReader()
-        self.flag_read = False
-        self.flag_write = False
-        self.read_dict = {'basic_set': False, 'data': False, 'threshold': False, 'con_set': False}
 
-    def scanComPort(self):
+        self.client.signal.client_msg.connect(self.show_thread_log)
+
+    #     self.start_param()
+    #
+    # def start_param(self) -> None:
+    #     """Привязывает сигналы из модуля Client к модулю Model"""
+    #     try:
+    #         self.initReader()
+    #         # self.init_connect_tcp()
+    #
+    #         # self.client.connect_tcp_server(6200)
+    #
+    #         self.client.signal.client_msg.connect(self.show_thread_log)
+    #
+    #     except Exception as e:
+    #         txt = 'ERROR in Model/start_param - {}'.format(e)
+    #         self.signal.show_stb.emit(txt)
+
+    def scan_com_port(self) -> None:
+        """Заполняет список доступными СОМ-портами"""
         try:
-            self.available_ports = self.client.port_scan()
+            self.prg_set.available_ports = self.client.port_scan()
 
         except Exception as e:
-            txt = 'ERROR in model/scanComPort - {}'.format(e)
+            txt = 'ERROR in Model/scan_com_port - {}'.format(e)
             self.signal.show_stb.emit(txt)
 
-    def initConnectTCP(self):
+    def connect_com(self) -> None:
+        """Запускает подключение по СОМ-порту"""
         try:
-            self.conTCP = ConnectTCP()
-            self.conTCP.signal.connect_result.connect(self.resultConTCP)
-            self.conTCP.signal.connect_client.connect(self.clientConTCP)
-            self.conTCP.signal.connect_error.connect(self.errorConTCP)
-            self.conTCP.signal.connect_restart.connect(self.con_restart)
-            self.signal.connect_tcp.connect(self.conTCP.startConnect)
-            self.signal.disconnect_tcp.connect(self.conTCP.exitConnect)
-            self.threadpool.start(self.conTCP)
+            port = self.prg_set.port
+            self.prg_set.flag_connect = self.client.connect_com(port)
+
+        except Exception as e:
+            txt = 'ERROR in model/connectCOM - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def close_connect(self) -> None:
+        """Закрывает соединение клиента"""
+        try:
+            if self.client.flag_connect:
+                self.client.close_client()
+                self.prg_set.flag_connect = self.client.flag_connect
+
+            else:
+                pass
+
+        except Exception as e:
+            txt = 'ERROR in model/close_connect - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def show_thread_log(self, data: str) -> None:
+        """Сигнал на вывод сообщения в СтатусБаре"""
+        try:
+            self.signal.show_stb.emit(data)
+
+        except Exception as e:
+            txt = 'ERROR in Model/show_thread_log - {}'.format(e)
+            self.signal.show_stb.emit(txt)
+
+    def init_connect_tcp(self) -> None:
+        """Инициализация потока связи, привязка его сигналов и запуск потока в работу"""
+        try:
+            self.connect_tcp = ConnectTCP()
+            self.connect_tcp.signal.connect_log.connect(self.show_thread_log)
+            self.connect_tcp.signal.connect_client.connect(self.clientConTCP)
+            self.connect_tcp.signal.connect_restart.connect(self.con_restart)
+            self.signal.connect_tcp.connect(self.connect_tcp.startConnect)
+            self.signal.disconnect_tcp.connect(self.connect_tcp.exitConnect)
+            self.threadpool.start(self.connect_tcp)
 
         except Exception as e:
             txt = 'ERROR in model/initConnectTCP - {}'.format(e)
             self.signal.show_stb.emit(txt)
 
-    def resultConTCP(self, data):
-        print(data)
-        self.signal.show_stb.emit(data)
-
-    def clientConTCP(self, data):
+    def clientConTCP(self, data) -> None:
+        """Подключение к контроллеру через ТСР и запуск потока чтения"""
         try:
-            self.host = data[0]
-            self.port = data[1]
-            self.client.connectClient('TCP', self.port, self.host)
+            self.prg_set.host = data[0]
+            self.prg_set.port = data[1]
+            self.client.connect_tcp(self.prg_set.port, self.prg_set.host)
             txt = 'TCP соединение установлено'
             self.signal.show_stb.emit(txt)
 
@@ -196,76 +121,58 @@ class Model:
                 self.signal.show_stb.emit(txt)
             else:
                 time.sleep(0.2)
-                self.client.connectClient('TCP', self.port, self.host)
+                self.client.connect_tcp(self.port, self.host)
+
         except Exception as e:
             txt = 'ERROR in model/clientConTCP - {}'.format(e)
             self.signal.show_stb.emit(txt)
 
-    def errorConTCP(self, data):
-        self.signal.show_stb.emit(data)
-
     def connectTCP(self):
+        """Запускает подключение к порту по ТСР"""
         try:
-            self.signal.connect_tcp.emit(int(self.port))
+            port = self.prg_set.port
+            self.signal.connect_tcp.emit(int(port))
 
         except Exception as e:
             txt = 'ERROR in model/connectTCP - {}'.format(e)
             self.signal.show_stb.emit(txt)
 
     def disconnectTCP(self):
+        """Разрывает ТСР соединение"""
         self.signal.disconnect_tcp.emit()
 
     def con_restart(self):
+        """Перезапускает соединение по ТСР"""
         self.disconnectTCP()
         self.connectTCP()
 
-    def connectCOM(self):
-        try:
-            self.client.connectClient(self.type_con, self.port, self.host)
-
-        except Exception as e:
-            txt = 'ERROR in model/connectCOM - {}'.format(e)
-            self.signal.show_stb.emit(txt)
-
-    def closeContr(self):
-        try:
-            if self.client.flag_connect:
-                self.client.flag_connect = False
-                self.client.closeClient()
-
-            else:
-                pass
-
-        except Exception as e:
-            txt = 'ERROR in model/closeContr - {}'.format(e)
-            self.signal.show_stb.emit(txt)
-
     def initReader(self):
+        """Инициализация потока чтения контроллера, привязка сигналов и запуск потока"""
         self.reader = Reader()
         self.reader.signal.read_result.connect(self.readResult)
         self.reader.signal.read_flag.connect(self.readFlag)
-        self.reader.signal.read_error.connect(self.readError)
         self.signal.startRead.connect(self.reader.startRead)
         self.signal.stopRead.connect(self.reader.stopRead)
         self.signal.exitRead.connect(self.reader.exitRead)
         self.threadpool.start(self.reader)
 
     def startRead(self):
-        self.signal.startRead.emit(self.client.client, self.read_dict)
+        """Сигнал на запуск чтения в потоке"""
+        self.signal.startRead.emit(self.client.client, self.prg_set.read_dict)
 
     def stopRead(self):
+        """Сигнал на остановку чтения в потоке"""
         self.signal.stopRead.emit()
 
     def exitRead(self):
+        """Сигнал на выход из потока чтения"""
         self.signal.exitRead.emit()
 
     def readFlag(self, data):
-        self.flag_read = data
-
-    def readError(self, txt):
-        self.signal.show_stb.emit(txt)
+        self.prg_set.flag_read = data
 
     def readResult(self, tag, data):
+
         temp = 0
         try:
             if tag == 'basic_set':
