@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from struct import pack, unpack
 from PyQt5.QtCore import QObject, QThreadPool, pyqtSignal
-from client import Client, Server
+from client import Client
 from settings import Settings, DataContr, SetBasicContr, SetConnectContr, SetThresholdContr
 from threads import Reader, Writer, ConnectTCP
 
@@ -21,7 +21,6 @@ class Model:
     def __init__(self):
         self.signal = WinSignals()
         self.client = Client()
-        self.server = Server()
         self.prg_set = Settings()
 
         self.contr_data = DataContr()
@@ -31,38 +30,8 @@ class Model:
         self.threadpool = QThreadPool()
 
         self.initReader()
-        self.init_server()
-        self.init_connect_tcp()
 
         self.client.signal.client_msg.connect(self.show_thread_log)
-
-        # self.init_server_tcp()
-
-    #     self.start_param()
-    #
-    # def start_param(self) -> None:
-    #     """Привязывает сигналы из модуля Client к модулю Model"""
-    #     try:
-    #         self.initReader()
-    #         # self.init_connect_tcp()
-    #
-    #         # self.client.connect_tcp_server(6200)
-    #
-    #         self.client.signal.client_msg.connect(self.show_thread_log)
-    #
-    #     except Exception as e:
-    #         txt = 'ERROR in Model/start_param - {}'.format(e)
-    #         self.signal.show_stb.emit(txt)
-
-    def init_server(self) -> None:
-        try:
-            print('Init server')
-            self.server.start_server('localhost', 6200)
-            print('start server')
-            print('type self.server - {}'.format(type(self.server)))
-
-        except Exception as e:
-            print(str(e))
 
     def scan_com_port(self) -> None:
         """Заполняет список доступными СОМ-портами"""

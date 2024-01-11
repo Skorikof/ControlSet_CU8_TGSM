@@ -1,13 +1,11 @@
 import serial.tools.list_ports
 from pymodbus.client import ModbusSerialClient
-from pymodbus.server import StartAsyncTcpServer
-from pymodbus.framer import ModbusAsciiFramer, ModbusSocketFramer
+from pymodbus.framer import ModbusAsciiFramer
 from PyQt5.QtCore import QObject, pyqtSignal
 
 
 class Signals(QObject):
     client_msg = pyqtSignal(str)
-    server_msg = pyqtSignal(str)
 
 
 class Client:
@@ -61,53 +59,16 @@ class Client:
 
             return self.flag_connect
 
-    # def connect_tcp(self, port, host='localhost') -> bool:
-    #     """Подключение к контроллеру через ТСР, возвращает состояние подключения"""
-    #     try:
-    #         self.client = ModbusTcpClient(host=host,
-    #                                       port=port,
-    #                                       framer=ModbusSocketFramer,
-    #                                       timeout=1,
-    #                                       retries=4,
-    #                                       retry_on_empty=True)
-    #
-    #         self.flag_connect = self.client.connect()
-    #
-    #     except Exception as e:
-    #         txt = 'ERROR in Client/connect_tcp - {}'.format(e)
-    #         self.msg_client(txt)
-    #
-    #     finally:
-    #         if self.flag_connect:
-    #             txt = 'Соединение установлено'
-    #         else:
-    #             txt = 'Соединение не установлено'
-    #         self.msg_client(txt)
-    #
-    #         return self.flag_connect
-    #
-    # def close_client(self):
-    #     """Закрывает клиент"""
-    #     try:
-    #         self.client.close()
-    #         self.flag_connect = False
-    #         print('Connect is stopped')
-    #
-    #     except Exception as e:
-    #         txt = 'ERROR in Client/close_client - {}'.format(e)
-    #         self.msg_client(txt)
+    def close_client(self):
+        """Закрывает клиент"""
+        try:
+            self.client.close()
+            self.flag_connect = False
+            print('Connect is stopped')
+
+        except Exception as e:
+            txt = 'ERROR in Client/close_client - {}'.format(e)
+            self.msg_client(txt)
+
     def msg_client(self, txt_err):
         self.signal.client_msg.emit(txt_err)
-
-
-class Server(QObject):
-    def __init__(self):
-        super(Server, self).__init__()
-        self.signal = Signals()
-        self.server = None
-
-    def start_server(self, host, port):
-        self.server = StartAsyncTcpServer(context=True,
-                                          framer=ModbusSocketFramer,
-                                          identity=None,
-                                          address=(host, port))
