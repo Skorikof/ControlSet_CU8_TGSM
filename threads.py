@@ -36,8 +36,9 @@ class ConnectTCP(QRunnable):
                     data = conn.recv(1024)
                     txt = 'MSG - {}'.format(data.decode())
                     self.signal.thread_log.emit(txt)
-                    if data.decode() == 'CONNECT OK':
-                        self.signal.connect_client.emit(addr)
+                    print(data.decode())
+                    # if data.decode() == 'CONNECT OK':
+                    #     self.signal.connect_client.emit(addr)
                         # while True:
                         #     msg = '3A30313033303030303030303146420D0A'
                         #     conn.send(bytearray.fromhex(msg))
@@ -47,10 +48,10 @@ class ConnectTCP(QRunnable):
                         #     time.sleep(10)
 
                         # self.signal.connect_restart.emit()
-                    else:
-                        txt = 'Что-то пошло не так с соединением'
-                        self.signal.thread_log.emit(txt)
-                        pass
+                    # else:
+                    #     txt = 'Что-то пошло не так с соединением'
+                    #     self.signal.thread_log.emit(txt)
+                    #     pass
 
                 except Exception as e:
                     txt = 'ERROR in thread connect GPRS - {}'.format(e)
